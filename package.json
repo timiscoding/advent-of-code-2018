@@ -1,0 +1,18 @@
+{
+  "name": "advent_of_code",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "keywords": [],
+  "author": "Timothy Tsui <timiscoding@gmail.com> (https://github.com/timiscoding)",
+  "license": "MIT",
+  "dependencies": {
+    "split2": "3.0.0"
+  }
+}
