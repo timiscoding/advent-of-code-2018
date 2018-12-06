@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { filename } = require("../utils");
+const { filename, timer } = require("../utils");
 
 const data = fs
   .readFileSync(filename)
@@ -85,29 +85,57 @@ function reduce2(polymer, ignoreUnit = "_") {
   return leftRes.slice(0, l + 1) + rightRes.slice(r);
 }
 
+/* Stack based solution even better-er. O(n) running time :O
+   Didn't come up with this algo on my own tho
+*/
+function reduce3(polymer, ignoreUnit = "_") {
+  const stack = [];
+  /* for of loop is slower than for loop
+  https://jsperf.com/for-loop-vs-for-of-strings/1
+  */
+  for (let i = 0; i < polymer.length; i++) {
+    const u = polymer[i];
+    if (isSameLetter(u, ignoreUnit)) {
+      continue;
+    } else if (stack.length && willCancel(stack[stack.length - 1], u)) {
+      stack.pop();
+    } else {
+      stack.push(u);
+    }
+  }
+
+  return stack.join("");
+}
+
 const ignoreUnits = "abcdefghijklmnopqrstuvwxyz";
+function reduceIgnore(algo) {
+  const reactedLengths = ignoreUnits
+    .split("")
+    .map(ignoreUnit => algo(data, ignoreUnit).length);
+  return Math.min(...reactedLengths);
+}
 
-console.time("Alg 1 part 1 took");
-console.log("Part 1:", reduce(data).length);
-console.timeEnd("Alg 1 part 1 took");
+const [reduce1_p1, reduce2_p1, reduce3_p1] = timer(
+  () => reduce(data).length,
+  () => reduce2(data).length,
+  () => reduce3(data).length
+);
 
-console.time("Alg 1 part 2 took");
-const reactedLengths = ignoreUnits.split("").map(ignored => {
-  const filtered = data.replace(new RegExp(ignored, "gi"), "");
-  return reduce(filtered).length;
+const [reduce2_p2, reduce3_p2, sol2] = timer(
+  // () => {
+  //   const reactedLengths = ignoreUnits.split("").map(ignored => {
+  //     const filtered = data.replace(new RegExp(ignored, "gi"), "");
+  //     return reduce(filtered).length;
+  //   });
+  //   return Math.min(...reactedLengths);
+  // },
+  () => reduceIgnore(reduce2),
+  () => reduceIgnore(reduce3)
+);
+
+console.table({ reduce1_p1, reduce2_p1, reduce3_p1 });
+console.table({
+  reduce1_p2: { time: "Takes 40s!" },
+  reduce2_p2,
+  reduce3_p2
 });
-const shortestPolymer = Math.min(...reactedLengths);
-console.log("reactedLengths: ", shortestPolymer);
-console.timeEnd("Alg 1 part 2 took");
-
-console.time("Alg 2 part 1 took");
-console.log("Part 1:", reduce2(data).length);
-console.timeEnd("Alg 2 part 1 took");
-
-console.time("Alg 2 part 2 took");
-const reactedLengths2 = ignoreUnits
-  .split("")
-  .map(ignoreUnit => reduce2(data, ignoreUnit).length);
-const shortestPolymer2 = Math.min(...reactedLengths2);
-console.log("Part 2:", shortestPolymer2);
-console.timeEnd("Alg 2 part 2 took");

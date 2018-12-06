@@ -20,6 +20,7 @@ ${files.map((f, i) => `  ${i}: ${f} ${f === filename ? "✅" : ""}`).join("\n")}
 
   return filename;
 };
+module.exports.filename = path.join(dirname, getDataFiles());
 
 module.exports.logger = (
   { label, last = false, stream = true, loggerCb = () => {} },
@@ -54,4 +55,14 @@ module.exports.logger = (
     }
   });
 
-module.exports.filename = path.join(dirname, getDataFiles());
+module.exports.timer = (...fns) =>
+  fns.map(fn => {
+    const start = process.hrtime();
+    const res = fn();
+    const [s, nanos] = process.hrtime(start);
+    const millis = nanos / 1000000;
+    return {
+      time: `${s ? `${s}s ` : ""}${millis.toFixed(3)}ms`,
+      res
+    };
+  });
