@@ -21,6 +21,7 @@ function willCancel(a = "_", b = "_") {
    ORing 32 converts 'a' to lowercase
 */
 function isSameLetter(a = "_", b = "_") {
+  // return a.toLowerCase() === b.toLowerCase();
   return (32 | a.charCodeAt()) === b.charCodeAt();
 }
 
