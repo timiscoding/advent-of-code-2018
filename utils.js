@@ -66,3 +66,6 @@ module.exports.timer = (...fns) =>
       res
     };
   });
+
+const idMaker = (i = 0) => () => i++;
+module.exports.genId = idMaker();

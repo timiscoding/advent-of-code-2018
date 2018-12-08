@@ -1,13 +1,11 @@
 const { Node } = require("./Graph");
-
-const idMaker = (i = 0) => () => i++;
-const getId = idMaker();
+const { genId } = require("../utils");
 
 class Worker {
   constructor() {
     this.status = Worker.prototype.status.idle;
     this.curTask = null;
-    this.id = getId();
+    this.id = genId();
   }
 
   getStatus() {
