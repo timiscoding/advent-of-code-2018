@@ -1,5 +1,7 @@
 const fs = require("fs");
 const { filename } = require("../utils");
+const { Graph } = require("./Graph");
+const Worker = require("./Worker");
 
 function parseData() {
   const data = fs.readFileSync(filename).toString();
@@ -7,77 +9,7 @@ function parseData() {
   return lines.map(l => ({ parent: l[5], child: l[36] }));
 }
 
-function Node(name = "") {
-  this.name = name;
-  this.children = [];
-  this.parents = [];
-}
-
-class Graph {
-  constructor() {
-    this.nodes = {};
-  }
-
-  addNode(name) {
-    this.nodes[name] = this.nodes[name] || new Node(name);
-    return this.nodes[name];
-  }
-
-  addEdge(parent, child) {
-    if (!parent || !(parent instanceof Node)) {
-      throw new Error("parent undefined or not Node instance");
-    } else if (!child || !(child instanceof Node)) {
-      throw new Error("child undefined or not Node instance");
-    }
-
-    if (!parent.children.includes(child)) {
-      parent.children.push(child);
-    }
-
-    if (!child.parents.includes(parent)) {
-      child.parents.push(parent);
-    }
-  }
-
-  getChildren(name) {
-    if (typeof name !== "string" && !this.nodes[name]) {
-      throw Error(`Node with name '${name}' does not exist`);
-    }
-    return this.nodes[name].children;
-  }
-
-  getParents(name) {
-    if (typeof name !== "string" && !this.nodes[name]) {
-      throw Error(`Node with name '${name}' does not exist`);
-    }
-    return this.nodes[name].parents;
-  }
-
-  getNode(name) {
-    if (!this.nodes[name]) {
-      throw Error(`Node with name '${name}' does not exist`);
-    }
-    return this.nodes[name];
-  }
-
-  getNodes() {
-    return Object.values(this.nodes);
-  }
-
-  print() {
-    console.group("Nodes:");
-    for (const [name, v] of Object.entries(this.nodes)) {
-      console.log(
-        `${name} parents:${
-          v.parents.length ? v.parents.map(n => n.name) : "[]"
-        } children:${v.children.length ? v.children.map(n => n.name) : "[]"}`
-      );
-    }
-    console.groupEnd();
-  }
-}
-
-/* returns whether the node is ready for processing  */
+/* returns whether the node is ready for doing  */
 function isStepReady(node, stepsDone) {
   return node.parents.every(p => stepsDone.has(p));
 }
@@ -108,16 +40,72 @@ function topologicalSort() {
         return res.includes(step) ? res : res.concat(step);
       }, nextSteps)
       .sort((a, b) => (a.name < b.name ? -1 : 1));
-    console.log("done", [...done]);
-    console.log("next", nextSteps);
   }
   return [...done].map(n => n.name).join("");
 }
 
-const sorted = topologicalSort();
-console.log(sorted);
+function topologicalSortParallel(workersCount, taskTimes) {
+  const g = new Graph();
 
-const taskTime = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  parseData().forEach(({ parent, child }) => {
+    const p = g.addNode(parent);
+    const c = g.addNode(child);
+    g.addEdge(p, c);
+  });
+
+  const done = new Set();
+  let nextSteps = g
+    .getNodes()
+    .filter(n => n.parents.length === 0)
+    .sort((a, b) => (a.name < b.name ? -1 : 1)); // maybe heap better
+
+  let time = 0;
+  Worker.prototype.setTaskTimes(taskTimes);
+  const workers = Array.from({ length: workersCount }, () => new Worker());
+  const nodesCount = g.getNodes().length;
+
+  do {
+    time++;
+    // console.group(`After ${time}s`);
+    const doneSteps = workers
+      .map(w => {
+        if (w.getStatus() === "idle" && nextSteps.length) {
+          w.assignTask(nextSteps.shift());
+        }
+        return w.doTask();
+      })
+      .filter(Boolean);
+
+    doneSteps.forEach(task => {
+      done.add(task);
+    });
+
+    const newSteps = doneSteps.reduce(
+      (res, step) =>
+        res.concat(step.children.filter(c => isStepReady(c, done))),
+      []
+    );
+    nextSteps = newSteps
+      .reduce((res, step) => {
+        return res.includes(step) ? res : res.concat(step);
+      }, nextSteps)
+      .sort((a, b) => (a.name < b.name ? -1 : 1));
+    // console.log("done", [...done]);
+    // console.log("next", nextSteps);
+    console.groupEnd();
+  } while (
+    done.size < nodesCount ||
+    workers.some(w => w.getStatus() === "busy")
+  );
+  return time;
+}
+
+const sorted = topologicalSort();
+console.log("Sorted steps:", sorted);
+
+const taskTimes = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   .split("")
-  .reduce((res, c, i) => ({ ...res, [c]: i + 1 }), {});
-console.log("taskTime: ", taskTime);
+  .reduce((res, c, i) => ({ ...res, [c]: i + 61 }), {});
+
+const time = topologicalSortParallel(5, taskTimes);
+console.log("Time for 5 workers to complete tasks: %ss", time);
