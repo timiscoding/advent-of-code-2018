@@ -6,6 +6,7 @@ const dirname = path.dirname(process.argv[1]);
 
 const getDataFiles = () => {
   const files = fs.readdirSync(dirname).filter(f => f.includes("data"));
+  if (files.length === 0) return;
 
   const choice = process.argv.find(arg => Boolean(parseInt(arg))) || 0;
   let filename = files[choice];
@@ -20,7 +21,9 @@ ${files.map((f, i) => `  ${i}: ${f} ${f === filename ? "✅" : ""}`).join("\n")}
 
   return filename;
 };
-module.exports.filename = path.join(dirname, getDataFiles());
+
+const dataFiles = getDataFiles();
+module.exports.filename = dataFiles && path.join(dirname, dataFiles);
 
 module.exports.logger = (
   { label, last = false, stream = true, loggerCb = () => {} },
