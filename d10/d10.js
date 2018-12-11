@@ -33,8 +33,10 @@ function normalize(pts, [xOffset, yOffset]) {
   return pts.map(p => [p[0] + xOffset, p[1] + yOffset]);
 }
 
-/* given an origin point, find the neighbour stars (the allStarsPos pts
-  surrounding origin) then add them to cluster */
+/* given an origin point, find the neighbour stars (the 8 pts surrounding origin)
+   and the neighbours neighbours, and so on.
+
+   returns a cluster of stars that are all connected */
 function findCluster(origin, starField, cluster) {
   if (!cluster) {
     cluster = new Map([[origin.toString(), origin]]);
@@ -55,7 +57,9 @@ function findCluster(origin, starField, cluster) {
   return cluster;
 }
 
-/* The starfield key is based on [px, py] so one or more elements may merge
+/* Computes the new positions for each star based on the velocity
+
+   The starfield key is based on [px, py] so one or more elements may merge
    because the velocities can cause stars to converge on the same point.
    When that occurs, map the value to an array of objects.
 
@@ -93,6 +97,13 @@ function printMessage(message) {
   });
 }
 
+/* Computes the star positions as they advance through time, and computes
+   all the clusters found. A cluster is a connected group of stars without
+   any space between them.
+
+   returns the smallest set of clusters it can find, although that is not
+   guaranteed as it could still be a local minima
+*/
 function maxStarClusters() {
   let starField = parseData();
   let clusters = [];
