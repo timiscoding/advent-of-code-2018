@@ -72,3 +72,5 @@ module.exports.timer = (...fns) =>
 
 const idMaker = (i = 0) => () => i++;
 module.exports.genId = idMaker();
+
+module.exports.puts = (...args) => console.log(...args.map(a => String(a)));

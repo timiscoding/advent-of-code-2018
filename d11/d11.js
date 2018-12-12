@@ -1,4 +1,5 @@
-const { timer } = require("../utils");
+const Queue = require("./Queue");
+const { timer, puts } = require("../utils");
 
 function powerGrid(serial, gridSize) {
   return Array.from({ length: gridSize }, (_, i) =>
@@ -27,22 +28,32 @@ function window(size) {
 }
 
 function filterGrid(window, grid) {
-  return Array.from({ length: grid.length }, (_, y) =>
-    Array.from({ length: grid.length }, (_, x) => {
+  return Array.from({ length: grid.length }, (_, y) => {
+    const rowQueues = [];
+    return Array.from({ length: grid.length }, (_, x) => {
       if (x > grid.length - window.length || y > grid.length - window.length)
         return 0;
 
-      const powerSum = window.reduce((rowSum, row) => {
-        return (
-          rowSum +
-          row.reduce((colSum, win) => {
-            return colSum + grid[y + win.y][x + win.x];
-          }, 0)
+      const powerSum = window.reduce((sum, winRow, index) => {
+        if (!rowQueues[index]) {
+          rowQueues[index] = { q: new Queue(), sum: 0 };
+          winRow.forEach(win => {
+            const gridVal = grid[y + win.y][x + win.x];
+            rowQueues[index].q.enqueue(gridVal);
+            rowQueues[index].sum += gridVal;
+          });
+          return rowQueues[index].sum;
+        }
+        const first = rowQueues[index].q.dequeue();
+        const last = rowQueues[index].q.enqueue(
+          grid[y + winRow[index].y][x + winRow[winRow.length - 1].x]
         );
+        rowQueues[index].sum = rowQueues[index].sum - first + last;
+        return sum + rowQueues[index].sum;
       }, 0);
       return powerSum;
-    })
-  );
+    });
+  });
 }
 
 /* returns a slice of a grid at x,y. for fuel cells, subtract 1 from the value to get x/y */
