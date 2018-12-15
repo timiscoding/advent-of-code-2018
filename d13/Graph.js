@@ -68,10 +68,10 @@ class Graph {
     this.paths[path.loc] = path;
 
     if (path.loc[0] > this.size.x) {
-      this.size.x = path.loc[0] + 1;
+      this.size.x = path.loc[0];
     }
     if (path.loc[1] > this.size.y) {
-      this.size.y = path.loc[1] + 1;
+      this.size.y = path.loc[1];
     }
     return this;
   }
@@ -124,6 +124,10 @@ class Graph {
 
   getPaths() {
     return Object.values(this.paths);
+  }
+
+  getPathsSize() {
+    return { x: this.size.x + 1, y: this.size.y + 1 };
   }
 
   toString() {

@@ -22,7 +22,6 @@ function parseData() {
 
   data.forEach((line, y) => {
     line.split("").forEach((ch, x) => {
-      console.log("x,y of path", x, y, ch);
       let prevPath;
       if ((ch === "|" || ch === "V" || ch === "^") && y > 0) {
         prevPath = g.getPath([x, y - 1]);
@@ -31,6 +30,8 @@ function parseData() {
         x > 0
       ) {
         prevPath = g.getPath([x - 1, y]);
+      } else if (ch === "+") {
+        prevPath = [g.getPath([x - 1, y]), g.getPath([x, y - 1])];
       }
 
       if (ch === "-" || ch === "<" || ch === ">") {
@@ -63,6 +64,12 @@ function parseData() {
         if (ch === "V") {
           carts.push(new Cart(curPath, cartDirs.down));
         }
+      } else if (ch === "+") {
+        const curPath = new IntPath([x, y]);
+        g.addPath(curPath);
+        prevPath.forEach(prev => {
+          g.addEdge(curPath, prev);
+        });
       }
     });
   });
@@ -74,21 +81,26 @@ class CartSim {
   constructor(graph, carts) {
     this.graph = graph;
     this.carts = carts;
-    this.tickCount = 0;
     this.carts.forEach(c => c.setGraph(this.graph));
+    this.tickCount = 0;
   }
 
-  play() {
+  async play({ ticks, delay = 0 }) {
     this.print();
-    let cartCrash = false;
-    while (!cartCrash) {
-      cartCrash = sim.tick();
+    if (ticks) {
+      while (ticks--) {
+        await this.tick(delay);
+      }
+    } else {
+      let cartCrash = false;
+      while (!cartCrash) {
+        cartCrash = await this.tick(delay);
+      }
+      console.log("Crashed cart", cartCrash.path.loc);
     }
-    console.log("Crashed cart", cartCrash.path.loc);
   }
 
-  tick() {
-    this.tickCount++;
+  _tick() {
     let crashedCart;
     for (let cart of this.carts) {
       cart.move();
@@ -97,8 +109,20 @@ class CartSim {
         break;
       }
     }
+    this.updateCartsOrder();
     this.print(crashedCart && crashedCart.path.loc);
     return crashedCart;
+  }
+
+  tick(delay) {
+    this.tickCount++;
+    if (delay) {
+      return new Promise(resolve => {
+        setTimeout(() => resolve(this._tick()), delay);
+      });
+    } else {
+      return Promise.resolve(this._tick(tickCount));
+    }
   }
 
   crashed() {
@@ -114,7 +138,20 @@ class CartSim {
     return false;
   }
 
+  updateCartsOrder() {
+    this.carts = this.carts.sort((c1, c2) => {
+      const cart1 = { x: c1.path.loc[0], y: c1.path.loc[1] };
+      const cart2 = { x: c2.path.loc[0], y: c2.path.loc[1] };
+
+      if (cart1.y !== cart2.y) {
+        return cart1.y - cart2.y;
+      }
+      return cart1.x - cart2.x;
+    });
+  }
+
   print(crashLoc) {
+    console.log("\u001b[2J\u001b[0;0H");
     const cartsMap = this.carts.reduce(
       (res, c) => ({
         ...res,
@@ -127,10 +164,12 @@ class CartSim {
       }),
       {}
     );
+    const { x: xPaths, y: yPaths } = this.graph.getPathsSize();
     let str = "";
-    for (let y = 0; y < this.graph.size.y; y++) {
-      for (let x = 0; x < this.graph.size.x; x++) {
+    for (let y = 0; y < yPaths; y++) {
+      for (let x = 0; x < xPaths; x++) {
         const path = this.graph.getPath([x, y]);
+
         if (crashLoc && crashLoc[0] === x && crashLoc[1] === y) {
           str += "X";
         } else if (cartsMap[[x, y]]) {
@@ -143,6 +182,8 @@ class CartSim {
           str += "\\";
         } else if (path instanceof FCurvePath) {
           str += "/";
+        } else if (path instanceof IntPath) {
+          str += "+";
         } else {
           str += " ";
         }
@@ -155,7 +196,5 @@ class CartSim {
 }
 
 const { graph, carts } = parseData();
-console.log("carts", "" + carts);
-console.log("s: ", graph.size);
 const sim = new CartSim(graph, carts);
-sim.play();
+sim.play({ delay: 500 });
