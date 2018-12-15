@@ -1,10 +1,4 @@
-const {
-  StraightPath,
-  BCurvePath,
-  FCurvePath,
-  IntPath,
-  CurvePath
-} = require("./Graph");
+const { BCurvePath, FCurvePath, IntPath } = require("./Graph");
 const { genId } = require("../utils");
 
 class Cart {
@@ -71,8 +65,7 @@ class Cart {
   }
 
   toString() {
-    return `Cart ${this.id} ${this.path} ${this.dir}`;
-    // return `Cart ${this.path.loc} ${this.dir.label}`;
+    return `(Cart #${this.id} ${this.path.loc} ${this.dir.label})`;
   }
 }
 

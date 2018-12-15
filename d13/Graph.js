@@ -48,13 +48,6 @@ class HorPath extends StraightPath {
   }
 }
 
-// const c = new CurvePath([1, 2]);
-// const v = new VerPath([1, 2]);
-// const h = new HorPath([1, 2]);
-// console.log(c instanceof Path);
-// console.log(v instanceof Path);
-// console.log(h instanceof StraightPath);
-
 class Graph {
   constructor() {
     this.paths = {};
@@ -134,7 +127,6 @@ class Graph {
     let str = "";
     for (let node of Object.values(this.paths)) {
       str += node.toString() + "\n";
-      // str += `Node {${loc}} edges ${edges.map(p => `{${p.loc}}`)}\n`;
     }
     return str;
   }
