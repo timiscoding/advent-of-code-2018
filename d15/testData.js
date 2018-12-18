@@ -104,6 +104,68 @@ const attack = `
 #..GE.#
 #######`;
 
+const testOutcome = `
+#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######
+`;
+
+const testOutcome2 = `
+#######
+#G..#E#
+#E#E.E#
+#G.##.#
+#...#E#
+#...E.#
+#######
+`;
+
+const testOutcome3 = `
+#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######
+`;
+
+const testOutcome4 = `
+#######
+#E.G#.#
+#.#G..#
+#G.#.G#
+#G..#.#
+#...E.#
+#######
+`;
+
+const testOutcome5 = `
+#######
+#.E...#
+#.#..G#
+#.###.#
+#E#G#G#
+#...#G#
+#######
+`;
+
+const testOutcome6 = `
+#########
+#G......#
+#.E.#...#
+#..##..G#
+#...##..#
+#...#...#
+#.G...G.#
+#.....G.#
+#########
+`;
+
 module.exports = {
   equidistantGoblins,
   equidistantElves,
@@ -119,5 +181,11 @@ module.exports = {
   attackSameHP,
   attackSameHP2,
   attackSameHP3,
-  attack
+  attack,
+  testOutcome,
+  testOutcome2,
+  testOutcome3,
+  testOutcome4,
+  testOutcome5,
+  testOutcome6
 };

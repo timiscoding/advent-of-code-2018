@@ -1,13 +1,8 @@
+const fs = require("fs");
+const { filename } = require("../utils");
 const { Game } = require("./Game");
 
-const data = `
-#######
-#.G...#
-#...EG#
-#.#.#G#
-#..G#E#
-#.....#
-#######`;
-
+const data = fs.readFileSync(filename).toString();
 const g = new Game(data);
-g.play();
+const outcome = g.play();
+console.log("outcome: ", outcome);

@@ -1,6 +1,7 @@
 const testData = require("./testData");
 const { Game } = require("./Game");
 const { Goblin, Elf } = require("./Player");
+const { __DEBUG } = require("./common");
 
 describe("Movement", () => {
   describe("When elf is equidistant to goblin", () => {
@@ -147,6 +148,44 @@ describe("Attack", () => {
       expect(goblin.hp).toBe(200);
       expect(g.players.elves).not.toContain(elf);
       expect(g.players.pos.has(g.paths.getVertex([elf.pos]))).toBe(false);
+    });
+  });
+
+  describe("Outcomes", () => {
+    it("Sample 1", () => {
+      g = new Game(testData.testOutcome);
+      const outcome = g.play();
+      expect(outcome).toBe(27730);
+    });
+
+    it("Sample 2", () => {
+      g = new Game(testData.testOutcome2);
+      const outcome = g.play();
+      expect(outcome).toBe(36334);
+    });
+
+    it("Sample 3", () => {
+      g = new Game(testData.testOutcome3);
+      const outcome = g.play();
+      expect(outcome).toBe(39514);
+    });
+
+    it("Sample 4", () => {
+      g = new Game(testData.testOutcome4);
+      const outcome = g.play();
+      expect(outcome).toBe(27755);
+    });
+
+    it("Sample 5", () => {
+      g = new Game(testData.testOutcome5);
+      const outcome = g.play();
+      expect(outcome).toBe(28944);
+    });
+
+    it("Sample 6", () => {
+      g = new Game(testData.testOutcome6);
+      const outcome = g.play();
+      expect(outcome).toBe(18740);
     });
   });
 });

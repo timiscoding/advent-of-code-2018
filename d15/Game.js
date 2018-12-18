@@ -60,15 +60,23 @@ class Game {
 
   play() {
     this.print();
-    for (let i = 0; i < 47; i++) {
-      this.playRound();
-      this.print();
+    let lastRoundComplete = false;
+    while (!this.isBattleWon()) {
+      lastRoundComplete = this.playRound();
+      __DEBUG && this.print();
     }
+
+    return this.getOutcome(lastRoundComplete);
   }
 
+  isBattleWon() {
+    return this.players.elves.length === 0 || this.players.goblins.length === 0;
+  }
+
+  /* returns a boolean whether a full round was played */
   playRound() {
     let players = this.updatePlayerOrder();
-    while (players.length) {
+    while (players.length && !this.isBattleWon()) {
       const player = players.shift();
       __DEBUG &&
         console.log(
@@ -78,6 +86,15 @@ class Game {
         );
       const { length, nextPos, enemyPos } = player.nextMove();
       if (length > 0 && length !== Infinity) {
+        __DEBUG &&
+          console.log(
+            "%s #%s moves to %s to attack %s at %s",
+            player instanceof Elf ? "Elf" : "Goblin",
+            player.id,
+            nextPos.toString(),
+            player.enemy === Elf ? "Elf" : "Goblin",
+            enemyPos.toString()
+          );
         this.players.pos.delete(this.paths.getVertex(player.pos));
         this.players.pos.set(this.paths.getVertex(nextPos), player);
         player.pos = nextPos;
@@ -89,16 +106,32 @@ class Game {
         this.removePlayer(enemyAttacked);
       }
     }
+
     this.rounds++;
+    return players.length > 0 ? false : true;
   }
 
-  removePlayer(player) {
-    let players =
-      player instanceof Elf ? this.players.elves : this.players.goblins;
-    const index = players.findIndex(elf => elf.id === player.id);
-    this.players.elves.splice(index, 1);
+  getOutcome(lastRoundComplete) {
+    const playersRemaining = [...this.players.elves, ...this.players.goblins];
+    const hpSum = playersRemaining.reduce((sum, p) => sum + p.hp, 0);
+    const fullRounds = lastRoundComplete ? this.rounds : this.rounds - 1;
+    const outcome = hpSum * fullRounds;
+    __DEBUG &&
+      console.log(
+        "hpSum %s, full rounds %s, outcome: %s",
+        hpSum,
+        fullRounds,
+        outcome
+      );
+    return outcome;
+  }
 
-    this.players.pos.delete(this.paths.getVertex(player.pos));
+  removePlayer(deadPlayer) {
+    let players =
+      deadPlayer instanceof Elf ? this.players.elves : this.players.goblins;
+    const index = players.findIndex(player => player.id === deadPlayer.id);
+    players.splice(index, 1);
+    this.players.pos.delete(this.paths.getVertex(deadPlayer.pos));
   }
 
   updatePlayerOrder() {

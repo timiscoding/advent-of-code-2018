@@ -39,13 +39,7 @@ class Player {
       },
       { length: Infinity, nextPos: null, enemyPos: null }
     );
-    __DEBUG &&
-      console.log(
-        "%s #%s moves to %s",
-        this instanceof Elf ? "Elf" : "Goblin",
-        this.id,
-        nextMove.nextPos
-      );
+
     return nextMove;
   }
 
