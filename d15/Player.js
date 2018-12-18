@@ -1,6 +1,7 @@
 const { Tree, TreeVertex } = require("./Tree");
 const Queue = require("../d11/Queue");
 const { idMaker } = require("../utils");
+const { posCompare } = require("./common");
 
 class Player {
   constructor(pos, players, paths) {
@@ -9,7 +10,7 @@ class Player {
     this.paths = paths;
   }
 
-  move() {
+  nextMove() {
     let enemies;
     if (this instanceof Elf) {
       enemies = this.players.goblins;
@@ -21,7 +22,9 @@ class Player {
         const { length, nextPos } = this.shortestPath(enemy.pos);
         if (
           length < res.length ||
-          (length === res.length && posCompare(res.enemyPos, enemy.pos) > 0)
+          (length !== Infinity &&
+            length === res.length &&
+            posCompare(res.enemyPos, enemy.pos) > 0)
         ) {
           return {
             length,
@@ -33,7 +36,7 @@ class Player {
       },
       { length: Infinity, nextPos: null, enemyPos: null }
     );
-    console.log("nextMove", nextMove);
+    // console.log("nextMove", nextMove);
     return nextMove;
   }
 
@@ -85,29 +88,18 @@ class Player {
         path.push(cur.value);
         cur = cur.parent;
       }
-      console.log(
-        "shortest path from %s to %s is %s of length %s",
-        endVertex.value.pos,
-        startVertex.value.pos,
-        path.map(p => p.value.pos).join(" -> "),
-        path.length
-      );
+      // console.log(
+      //   "shortest path from %s to %s is %s of length %s",
+      //   endVertex.value.pos,
+      //   startVertex.value.pos,
+      //   path.map(p => p.value.pos).join(" -> "),
+      //   path.length
+      // );
       length = path.length;
     }
 
     return { length, nextPos };
   }
-}
-
-/* compares 2 positions [x,y] and returns
-      < 0 if 'a' comes before 'b' in read order (top to bottom, left to right)
-      0 if 'a' is equal to 'b'
-      > 0 if 'a' comes after 'b' in read order
-*/
-function posCompare(a, b) {
-  const yDiff = a[1] - b[1];
-  if (yDiff !== 0) return yDiff;
-  return a[0] - b[0];
 }
 
 const newElfId = idMaker();

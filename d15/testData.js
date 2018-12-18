@@ -26,9 +26,36 @@ const equidistantMove2 = `
 #...G.#
 #######`;
 
+const noMove = `
+#######
+#.....#
+#..GE.#
+#.....#
+#######`;
+
+const playerMoves = `
+#######
+#....E#
+#G....#
+#######`;
+
+const playerMoves2 = `
+#########
+#G..G..G#
+#.......#
+#.......#
+#G..E..G#
+#.......#
+#.......#
+#G..G..G#
+#########`;
+
 module.exports = {
   equidistantGoblins,
   equidistantElves,
   equidistantMove,
-  equidistantMove2
+  equidistantMove2,
+  playerMoves,
+  playerMoves2,
+  noMove
 };
