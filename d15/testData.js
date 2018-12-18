@@ -50,6 +50,60 @@ const playerMoves2 = `
 #G..G..G#
 #########`;
 
+const attackEnemyOnly = `
+#######
+#..G..#
+#.GGG.#
+#..E..#
+#######`;
+
+const attackNoone = `
+#######
+#..G..#
+#.GGG.#
+#..G..#
+#######`;
+
+const attackNoone2 = `
+#######
+#.....#
+#..G..#
+#.....#
+#######`;
+
+const attackWeakest = `
+#######
+#..E..#
+#.EGE.#
+#..E..#
+#######`;
+
+const attackSameHP = `
+#######
+#..E..#
+#.EGE.#
+#..E..#
+#######`;
+
+const attackSameHP2 = `
+#######
+#.....#
+#.EGE.#
+#..E..#
+#######`;
+
+const attackSameHP3 = `
+#######
+#.....#
+#..GE.#
+#..E..#
+#######`;
+
+const attack = `
+#######
+#..GE.#
+#######`;
+
 module.exports = {
   equidistantGoblins,
   equidistantElves,
@@ -57,5 +111,13 @@ module.exports = {
   equidistantMove2,
   playerMoves,
   playerMoves2,
-  noMove
+  noMove,
+  attackEnemyOnly,
+  attackWeakest,
+  attackNoone,
+  attackNoone2,
+  attackSameHP,
+  attackSameHP2,
+  attackSameHP3,
+  attack
 };

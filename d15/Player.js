@@ -1,22 +1,25 @@
 const { Tree, TreeVertex } = require("./Tree");
 const Queue = require("../d11/Queue");
 const { idMaker } = require("../utils");
-const { posCompare } = require("./common");
+const { posCompare, __DEBUG } = require("./common");
 
 class Player {
   constructor(pos, players, paths) {
     this.pos = pos;
     this.players = players;
     this.paths = paths;
+    this.hp = 200; // hit points
+    this.ap = 3; // attack power
+    if (this instanceof Elf) {
+      this.enemy = Goblin;
+    } else {
+      this.enemy = Elf;
+    }
   }
 
   nextMove() {
-    let enemies;
-    if (this instanceof Elf) {
-      enemies = this.players.goblins;
-    } else {
-      enemies = this.players.elves;
-    }
+    let enemies =
+      this.enemy === Goblin ? this.players.goblins : this.players.elves;
     const nextMove = enemies.reduce(
       (res, enemy) => {
         const { length, nextPos } = this.shortestPath(enemy.pos);
@@ -36,13 +39,25 @@ class Player {
       },
       { length: Infinity, nextPos: null, enemyPos: null }
     );
-    // console.log("nextMove", nextMove);
+    __DEBUG &&
+      console.log(
+        "%s #%s moves to %s",
+        this instanceof Elf ? "Elf" : "Goblin",
+        this.id,
+        nextMove.nextPos
+      );
     return nextMove;
   }
 
-  /* startVertex will be an in-range pos that the attacker wants to move to.
-  endVertex is the position of the attacker as the shortest path will be 1 of the 4 possible moves
-  that the attacker can make */
+  /* Finds the shortest path to 'pos' from this player's position.
+     Length will be Infinity if it can't find one and 0 if it is next to 'pos'.
+     Uses a variant of BFS but stops searching as soon as target is found.
+      Args: pos [x,y] is the target path
+      Returns: {
+        length: the number of steps to be adjacent to 'pos'
+        nextPos: where this player should move next [x,y] to walk along the shortest path
+      }
+   */
   shortestPath(pos) {
     const startVertex = this.paths.getVertex(pos);
     const endVertex = this.paths.getVertex(this.pos);
@@ -99,6 +114,56 @@ class Player {
     }
 
     return { length, nextPos };
+  }
+
+  attack() {
+    const enemy = this.findAdjEnemy();
+    if (enemy) {
+      __DEBUG &&
+        console.log(
+          "%s #%s attacks %s #%s",
+          this instanceof Elf ? "Elf" : "Goblin",
+          this.id,
+          this.enemy === Elf ? "Elf" : "Goblin",
+          enemy.id
+        );
+      enemy.damage(this.ap);
+    }
+    return enemy;
+  }
+
+  damage(ap) {
+    this.hp -= ap;
+    __DEBUG &&
+      console.log(
+        "%s #%s damaged hp left",
+        this instanceof Elf ? "Elf" : "Goblin",
+        this.id,
+        this.hp
+      );
+  }
+
+  findAdjEnemy() {
+    const [x, y] = this.pos;
+    let weak = null;
+    [[x, y - 1], [x - 1, y], [x + 1, y], [x, y + 1]].forEach(p => {
+      const path = this.paths.getVertex(p);
+      if (path && this.players.pos.has(path)) {
+        const player = this.players.pos.get(path);
+        // console.log("here" + player);
+        if (player instanceof this.enemy) {
+          if (weak === null || player.hp < weak.hp) {
+            weak = player;
+          } else if (
+            player.hp === weak.hp &&
+            posCompare(weak.pos, player.pos) > 0
+          ) {
+            weak = player;
+          }
+        }
+      }
+    });
+    return weak;
   }
 }
 

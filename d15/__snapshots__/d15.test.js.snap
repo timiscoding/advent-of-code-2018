@@ -1,6 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`When a player moves, its position updates #2 1`] = `
+exports[`Movement Multiple rounds When a player moves, its position updates 1`] = `
+"
+#######
+#G..E.#
+#.....#
+#######
+
+#######
+#.GE..#
+#.....#
+#######
+
+#######
+#.GE..#
+#.....#
+#######
+
+"
+`;
+
+exports[`Movement Multiple rounds as above #2 1`] = `
 "
 #########
 #.G...G.#
@@ -31,26 +51,6 @@ exports[`When a player moves, its position updates #2 1`] = `
 #.......#
 #.......#
 #########
-
-"
-`;
-
-exports[`When a player moves, its position updates 1`] = `
-"
-#######
-#G..E.#
-#.....#
-#######
-
-#######
-#.GE..#
-#.....#
-#######
-
-#######
-#.GE..#
-#.....#
-#######
 
 "
 `;

@@ -1,6 +1,6 @@
 const { Elf, Goblin } = require("./Player");
 const { Graph } = require("./Graph");
-const { posCompare } = require("./common");
+const { posCompare, __DEBUG } = require("./common");
 
 class Path {
   constructor(pos) {
@@ -60,24 +60,45 @@ class Game {
 
   play() {
     this.print();
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 47; i++) {
       this.playRound();
       this.print();
     }
   }
 
   playRound() {
-    const players = this.updatePlayerOrder();
-    players.forEach(player => {
-      // console.log("player turn" + player);
+    let players = this.updatePlayerOrder();
+    while (players.length) {
+      const player = players.shift();
+      __DEBUG &&
+        console.log(
+          "Turn: %s #%s",
+          player instanceof Elf ? "Elf" : "Goblin",
+          player.id
+        );
       const { length, nextPos, enemyPos } = player.nextMove();
       if (length > 0 && length !== Infinity) {
         this.players.pos.delete(this.paths.getVertex(player.pos));
         this.players.pos.set(this.paths.getVertex(nextPos), player);
         player.pos = nextPos;
       }
-    });
+
+      const enemyAttacked = player.attack();
+      if (enemyAttacked && enemyAttacked.hp <= 0) {
+        players = players.filter(p => p !== enemyAttacked);
+        this.removePlayer(enemyAttacked);
+      }
+    }
     this.rounds++;
+  }
+
+  removePlayer(player) {
+    let players =
+      player instanceof Elf ? this.players.elves : this.players.goblins;
+    const index = players.findIndex(elf => elf.id === player.id);
+    this.players.elves.splice(index, 1);
+
+    this.players.pos.delete(this.paths.getVertex(player.pos));
   }
 
   updatePlayerOrder() {
@@ -106,7 +127,23 @@ class Game {
       str += "\n";
     }
     !silent && console.log(str);
+    !silent && this.printPlayerInfo();
     return str;
+  }
+
+  printPlayerInfo() {
+    let str =
+      this.players.elves
+        .map(elf => `Elf #${elf.id} pos: ${elf.pos} hp: ${elf.hp}`)
+        .join("\n") +
+      "\n" +
+      this.players.goblins
+        .map(
+          goblin => `Goblin #${goblin.id} pos: ${goblin.pos} hp: ${goblin.hp}`
+        )
+        .join("\n") +
+      "\n";
+    console.log(str);
   }
 }
 
