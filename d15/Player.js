@@ -17,6 +17,10 @@ class Player {
     }
   }
 
+  setAp(newAp) {
+    this.ap = newAp;
+  }
+
   nextMove() {
     let enemies =
       this.enemy === Goblin ? this.players.goblins : this.players.elves;
@@ -113,14 +117,6 @@ class Player {
   attack() {
     const enemy = this.findAdjEnemy();
     if (enemy) {
-      __DEBUG &&
-        console.log(
-          "%s #%s attacks %s #%s",
-          this instanceof Elf ? "Elf" : "Goblin",
-          this.id,
-          this.enemy === Elf ? "Elf" : "Goblin",
-          enemy.id
-        );
       enemy.damage(this.ap);
     }
     return enemy;
@@ -128,13 +124,6 @@ class Player {
 
   damage(ap) {
     this.hp -= ap;
-    __DEBUG &&
-      console.log(
-        "%s #%s damaged hp left",
-        this instanceof Elf ? "Elf" : "Goblin",
-        this.id,
-        this.hp
-      );
   }
 
   findAdjEnemy() {

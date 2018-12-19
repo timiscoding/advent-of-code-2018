@@ -14,6 +14,7 @@
   "author": "Timothy Tsui <timiscoding@gmail.com> (https://github.com/timiscoding)",
   "license": "MIT",
   "dependencies": {
+    "chalk": "2.4.1",
     "jest": "23.6.0",
     "split2": "3.0.0"
   }

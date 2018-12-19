@@ -166,6 +166,58 @@ const testOutcome6 = `
 #########
 `;
 
+const testHelpElvesWin = `
+#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######
+`;
+
+const testHelpElvesWin2 = `
+#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######
+`;
+
+const testHelpElvesWin3 = `
+#######
+#E.G#.#
+#.#G..#
+#G.#.G#
+#G..#.#
+#...E.#
+#######
+`;
+
+const testHelpElvesWin4 = `
+#######
+#.E...#
+#.#..G#
+#.###.#
+#E#G#G#
+#...#G#
+#######
+`;
+
+const testHelpElvesWin5 = `
+#########
+#G......#
+#.E.#...#
+#..##..G#
+#...##..#
+#...#...#
+#.G...G.#
+#.....G.#
+#########
+`;
+
 module.exports = {
   equidistantGoblins,
   equidistantElves,
@@ -187,5 +239,10 @@ module.exports = {
   testOutcome3,
   testOutcome4,
   testOutcome5,
-  testOutcome6
+  testOutcome6,
+  testHelpElvesWin,
+  testHelpElvesWin2,
+  testHelpElvesWin3,
+  testHelpElvesWin4,
+  testHelpElvesWin5
 };

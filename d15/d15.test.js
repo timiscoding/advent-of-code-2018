@@ -1,7 +1,8 @@
 const testData = require("./testData");
 const { Game } = require("./Game");
 const { Goblin, Elf } = require("./Player");
-const { __DEBUG } = require("./common");
+
+jest.mock("./common");
 
 describe("Movement", () => {
   describe("When elf is equidistant to goblin", () => {
@@ -186,6 +187,58 @@ describe("Attack", () => {
       g = new Game(testData.testOutcome6);
       const outcome = g.play();
       expect(outcome).toBe(18740);
+    });
+  });
+
+  describe("Help the elves win!", () => {
+    it("Sample 1", () => {
+      const data = testData.testHelpElvesWin;
+      let outcome = -1;
+      for (let elfAp = 4; outcome === -1; elfAp++) {
+        const g = new Game(data);
+        outcome = g.playBiased(elfAp);
+      }
+      expect(outcome).toBe(4988);
+    });
+
+    it("Sample 2", () => {
+      const data = testData.testHelpElvesWin2;
+      let outcome = -1;
+      for (let elfAp = 4; outcome === -1; elfAp++) {
+        const g = new Game(data);
+        outcome = g.playBiased(elfAp);
+      }
+      expect(outcome).toBe(31284);
+    });
+
+    it("Sample 3", () => {
+      const data = testData.testHelpElvesWin3;
+      let outcome = -1;
+      for (let elfAp = 4; outcome === -1; elfAp++) {
+        const g = new Game(data);
+        outcome = g.playBiased(elfAp);
+      }
+      expect(outcome).toBe(3478);
+    });
+
+    it("Sample 4", () => {
+      const data = testData.testHelpElvesWin4;
+      let outcome = -1;
+      for (let elfAp = 4; outcome === -1; elfAp++) {
+        const g = new Game(data);
+        outcome = g.playBiased(elfAp);
+      }
+      expect(outcome).toBe(6474);
+    });
+
+    it("Sample 5", () => {
+      const data = testData.testHelpElvesWin5;
+      let outcome = -1;
+      for (let elfAp = 4; outcome === -1; elfAp++) {
+        const g = new Game(data);
+        outcome = g.playBiased(elfAp);
+      }
+      expect(outcome).toBe(1140);
     });
   });
 });

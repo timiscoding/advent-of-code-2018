@@ -9,6 +9,6 @@ function posCompare(a, b) {
   return a[0] - b[0];
 }
 
-const __DEBUG = false;
+const __DEBUG = true;
 
 module.exports = { posCompare, __DEBUG };

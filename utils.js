@@ -93,6 +93,25 @@ module.exports.terminalColours = {
   bgWhite: "\x1b[47m"
 };
 
+/* used for chalk */
+module.exports.colours = [
+  "red",
+  "green",
+  "yellow",
+  "blue",
+  "magenta",
+  "cyan",
+  "white",
+  "gray",
+  "redBright",
+  "greenBright",
+  "yellowBright",
+  "blueBright",
+  "magentaBright",
+  "cyanBright",
+  "whiteBright"
+];
+
 function colourStr(terminalColour, str) {
   return `${terminalColour}${str}\x1b[0m`;
 }
