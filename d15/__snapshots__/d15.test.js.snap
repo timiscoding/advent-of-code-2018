@@ -1,5 +1,130 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Attack Help the elves win! Sample 1 1`] = `
+"#######
+#..E..#
+#...E.#
+#.#.#.#
+#...#.#
+#.....#
+#######
+"
+`;
+
+exports[`Attack Help the elves win! Sample 2 1`] = `
+"#######
+#.E.E.#
+#.#E..#
+#E.##E#
+#.E.#.#
+#...#.#
+#######
+"
+`;
+
+exports[`Attack Help the elves win! Sample 3 1`] = `
+"#######
+#.E.#.#
+#.#E..#
+#..#..#
+#...#.#
+#.....#
+#######
+"
+`;
+
+exports[`Attack Help the elves win! Sample 4 1`] = `
+"#######
+#...E.#
+#.#..E#
+#.###.#
+#.#.#.#
+#...#.#
+#######
+"
+`;
+
+exports[`Attack Help the elves win! Sample 5 1`] = `
+"#########
+#.......#
+#.E.#...#
+#..##...#
+#...##..#
+#...#...#
+#.......#
+#.......#
+#########
+"
+`;
+
+exports[`Attack Outcomes Sample 1 1`] = `
+"#######
+#G....#
+#.G...#
+#.#.#G#
+#...#.#
+#....G#
+#######
+"
+`;
+
+exports[`Attack Outcomes Sample 2 1`] = `
+"#######
+#...#E#
+#E#...#
+#.E##.#
+#E..#E#
+#.....#
+#######
+"
+`;
+
+exports[`Attack Outcomes Sample 3 1`] = `
+"#######
+#.E.E.#
+#.#E..#
+#E.##.#
+#.E.#.#
+#...#.#
+#######
+"
+`;
+
+exports[`Attack Outcomes Sample 4 1`] = `
+"#######
+#G.G#.#
+#.#G..#
+#..#..#
+#...#G#
+#...G.#
+#######
+"
+`;
+
+exports[`Attack Outcomes Sample 5 1`] = `
+"#######
+#.....#
+#.#G..#
+#.###.#
+#.#.#.#
+#G.G#G#
+#######
+"
+`;
+
+exports[`Attack Outcomes Sample 6 1`] = `
+"#########
+#.G.....#
+#G.G#...#
+#.G##...#
+#...##..#
+#.G.#...#
+#.......#
+#.......#
+#########
+"
+`;
+
 exports[`Movement Multiple rounds When a player moves, its position updates 1`] = `
 "
 #######

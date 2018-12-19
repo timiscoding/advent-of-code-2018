@@ -1,8 +1,9 @@
 const { Elf, Goblin } = require("./Player");
 const { Graph } = require("./Graph");
-const { posCompare, __DEBUG } = require("./common");
+const { posCompare, __DEBUG, getChalkInstance } = require("./common");
 const { colours } = require("../utils");
-const chalk = require("chalk");
+
+const chalk = getChalkInstance();
 
 class Path {
   constructor(pos) {
@@ -24,6 +25,10 @@ class Game {
     this.players = { elves: [], goblins: [], pos: new Map() };
     this.rounds = 0;
     this.parseData(data);
+    this.teamSize = {
+      elves: this.players.elves.length,
+      goblins: this.players.goblins.length
+    };
   }
 
   cstr(player) {
@@ -34,7 +39,7 @@ class Game {
         ? this.playerColours.elves[player.id]
         : this.playerColours.goblins[player.id];
     return player instanceof Elf
-      ? chalk[colour](str)
+      ? chalk[colour].bold(str)
       : chalk[colour].inverse(str);
   }
 
@@ -78,11 +83,10 @@ class Game {
   }
 
   play() {
-    this.print();
     let lastRoundComplete = false;
     while (!this.isBattleWon()) {
-      lastRoundComplete = this.playRound();
       __DEBUG && this.print();
+      lastRoundComplete = this.playRound();
     }
 
     return this.getOutcome(lastRoundComplete);
@@ -92,21 +96,20 @@ class Game {
      returns the outcome if they won with 0 casualties, -1 if some died */
   playBiased(elfAp) {
     const elfCount = this.players.elves.length;
-
     this.players.elves.forEach(elf => {
       elf.setAp(elfAp);
     });
 
     let lastRoundComplete = false;
     while (!this.isBattleWon() && this.players.elves.length === elfCount) {
-      lastRoundComplete = this.playRound();
       __DEBUG && this.print();
+      lastRoundComplete = this.playRound();
     }
 
     return this.players.elves.length === elfCount &&
       this.players.goblins.length === 0
       ? this.getOutcome(lastRoundComplete)
-      : -1;
+      : { outcome: -1 };
   }
 
   isBattleWon() {
@@ -164,15 +167,15 @@ class Game {
     const hpSum = playersRemaining.reduce((sum, p) => sum + p.hp, 0);
     const fullRounds = lastRoundComplete ? this.rounds : this.rounds - 1;
     const outcome = hpSum * fullRounds;
-    this.print();
-    // __DEBUG &&
-    console.log(
-      "hpSum %s, full rounds %s, outcome: %s",
-      hpSum,
-      fullRounds,
-      outcome
-    );
-    return outcome;
+    __DEBUG && this.print();
+    __DEBUG &&
+      console.log(
+        "hpSum %s, full rounds %s, outcome: %s",
+        hpSum,
+        fullRounds,
+        outcome
+      );
+    return { fullRounds, hpSum, outcome };
   }
 
   removePlayer(deadPlayer) {
@@ -189,7 +192,14 @@ class Game {
   }
 
   print({ silent = false } = {}) {
-    !silent && console.log("After %s rounds\n", this.rounds);
+    !silent &&
+      console.log(
+        chalk.inverse(
+          `\n${"-".repeat(10)} Game ${this.teamSize.elves}E v ${
+            this.teamSize.goblins
+          }G - After ${this.rounds} round/s ${"-".repeat(10)}\n`
+        )
+      );
     let str = "";
     for (let y = 0; y < this.pathsSize.y; y++) {
       for (let x = 0; x < this.pathsSize.x; x++) {
@@ -197,7 +207,7 @@ class Game {
         const player = path ? this.players.pos.get(path) : null;
 
         if (player && player instanceof Elf) {
-          str += chalk[this.playerColours.elves[player.id]]("E");
+          str += chalk[this.playerColours.elves[player.id]].bold("E");
         } else if (player && player instanceof Goblin) {
           str += chalk[this.playerColours.goblins[player.id]].inverse("G");
         } else if (path) {
@@ -223,9 +233,8 @@ class Game {
         .map(
           goblin => `${this.cstr(goblin)} pos: ${goblin.pos} hp: ${goblin.hp}`
         )
-        .join("\n") +
-      "\n";
-    console.log(str);
+        .join("\n");
+    console.log(str + "\n");
   }
 }
 

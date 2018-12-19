@@ -9,7 +9,7 @@ const testData = require("./testData");
 // console.log("Part 1 outcome: ", outcome);
 
 // const data = fs.readFileSync(filename).toString();
-const data = testData.testHelpElvesWin5;
+const data = testData.testHelpElvesWin3;
 // let outcome = -1;
 // for (let elfAp = 4; outcome === -1; elfAp++) {
 //   const g = new Game(data);
@@ -24,4 +24,4 @@ const data = testData.testHelpElvesWin5;
 // console.log("Outcome", outcome);
 
 const g = new Game(data);
-g.playBiased(16);
+g.playBiased(15);

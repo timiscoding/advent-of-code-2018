@@ -155,90 +155,121 @@ describe("Attack", () => {
   describe("Outcomes", () => {
     it("Sample 1", () => {
       g = new Game(testData.testOutcome);
-      const outcome = g.play();
-      expect(outcome).toBe(27730);
+      const res = g.play();
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 27730, hpSum: 590, fullRounds: 47 });
     });
 
     it("Sample 2", () => {
       g = new Game(testData.testOutcome2);
-      const outcome = g.play();
-      expect(outcome).toBe(36334);
+      const res = g.play();
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 36334, hpSum: 982, fullRounds: 37 });
     });
 
     it("Sample 3", () => {
       g = new Game(testData.testOutcome3);
-      const outcome = g.play();
-      expect(outcome).toBe(39514);
+      const res = g.play();
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 39514, hpSum: 859, fullRounds: 46 });
     });
 
     it("Sample 4", () => {
       g = new Game(testData.testOutcome4);
-      const outcome = g.play();
-      expect(outcome).toBe(27755);
+      const res = g.play();
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 27755, hpSum: 793, fullRounds: 35 });
     });
 
     it("Sample 5", () => {
       g = new Game(testData.testOutcome5);
-      const outcome = g.play();
-      expect(outcome).toBe(28944);
+      const res = g.play();
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 28944, hpSum: 536, fullRounds: 54 });
     });
 
     it("Sample 6", () => {
       g = new Game(testData.testOutcome6);
-      const outcome = g.play();
-      expect(outcome).toBe(18740);
+      const res = g.play();
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 18740, hpSum: 937, fullRounds: 20 });
     });
   });
 
   describe("Help the elves win!", () => {
     it("Sample 1", () => {
       const data = testData.testHelpElvesWin;
-      let outcome = -1;
-      for (let elfAp = 4; outcome === -1; elfAp++) {
-        const g = new Game(data);
-        outcome = g.playBiased(elfAp);
+      let res = { outcome: -1 };
+      let g;
+      let elfAp = 3;
+      while (res.outcome === -1) {
+        elfAp++;
+        g = new Game(data);
+        res = g.playBiased(elfAp);
       }
-      expect(outcome).toBe(4988);
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 4988, hpSum: 172, fullRounds: 29 });
+      expect(elfAp).toBe(15);
     });
 
     it("Sample 2", () => {
       const data = testData.testHelpElvesWin2;
-      let outcome = -1;
-      for (let elfAp = 4; outcome === -1; elfAp++) {
-        const g = new Game(data);
-        outcome = g.playBiased(elfAp);
+      let res = { outcome: -1 };
+      let g;
+      let elfAp = 3;
+      while (res.outcome === -1) {
+        elfAp++;
+        g = new Game(data);
+        res = g.playBiased(elfAp);
       }
-      expect(outcome).toBe(31284);
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 31284, hpSum: 948, fullRounds: 33 });
+      expect(elfAp).toBe(4);
     });
 
     it("Sample 3", () => {
       const data = testData.testHelpElvesWin3;
-      let outcome = -1;
-      for (let elfAp = 4; outcome === -1; elfAp++) {
-        const g = new Game(data);
-        outcome = g.playBiased(elfAp);
+      let res = { outcome: -1 };
+      let g;
+      let elfAp = 3;
+      while (res.outcome === -1) {
+        elfAp++;
+        g = new Game(data);
+        res = g.playBiased(elfAp);
       }
-      expect(outcome).toBe(3478);
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 3478, hpSum: 94, fullRounds: 37 });
+      expect(elfAp).toBe(15);
     });
 
     it("Sample 4", () => {
       const data = testData.testHelpElvesWin4;
-      let outcome = -1;
-      for (let elfAp = 4; outcome === -1; elfAp++) {
-        const g = new Game(data);
-        outcome = g.playBiased(elfAp);
+      let res = { outcome: -1 };
+      let g;
+      let elfAp = 4;
+      while (res.outcome === -1) {
+        elfAp++;
+        g = new Game(data);
+        res = g.playBiased(elfAp);
       }
-      expect(outcome).toBe(6474);
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 6474, hpSum: 166, fullRounds: 39 });
+      expect(elfAp).toBe(12);
     });
 
     it("Sample 5", () => {
       const data = testData.testHelpElvesWin5;
-      let outcome = -1;
-      for (let elfAp = 4; outcome === -1; elfAp++) {
-        const g = new Game(data);
-        outcome = g.playBiased(elfAp);
+      let res = { outcome: -1 };
+      let g;
+      let elfAp = 4;
+      while (res.outcome === -1) {
+        elfAp++;
+        g = new Game(data);
+        res = g.playBiased(elfAp);
       }
-      expect(outcome).toBe(1140);
+      expect(g.print()).toMatchSnapshot();
+      expect(res).toEqual({ outcome: 1140, hpSum: 38, fullRounds: 30 });
+      expect(elfAp).toBe(34);
     });
   });
 });
