@@ -10,7 +10,7 @@ function posCompare(a, b) {
   return a[0] - b[0];
 }
 
-const __DEBUG = true; // enable to print game board and info
+const __DEBUG = false; // enable to print game board steps
 
 let chalkInstance;
 const getChalkInstance = (enabled = true) => {

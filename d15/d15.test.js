@@ -1,6 +1,6 @@
 const testData = require("./testData");
 const { Game } = require("./Game");
-const { Goblin, Elf } = require("./Player");
+const { Elf } = require("./Player");
 
 jest.mock("./common");
 
@@ -8,32 +8,61 @@ describe("Movement", () => {
   describe("When elf is equidistant to goblin", () => {
     it("it moves to first goblin in read order", () => {
       const g = new Game(testData.equidistantGoblins);
-      g.players.goblins.push(new Goblin([1, 1], g.players, g.paths));
-      const { nextPos, enemyPos } = g.players.elves[0].nextMove();
-      expect(nextPos).toEqual([3, 1]);
-      expect(enemyPos).toEqual([1, 1]);
+      const { nextPos, enemyAdjPos } = g.players.elves[0].nextMove();
+      expect(nextPos).toEqual([5, 1]);
+      expect(enemyAdjPos).toEqual([6, 1]);
     });
 
-    it("same but with roles switched", () => {
-      const g = new Game(testData.equidistantElves);
-      g.players.elves.push(new Elf([1, 1], g.players, g.paths));
-      const { nextPos, enemyPos } = g.players.goblins[0].nextMove();
-      expect(nextPos).toEqual([3, 1]);
-      expect(enemyPos).toEqual([1, 1]);
+    it("it moves to the first goblin in read order #2", () => {
+      const g = new Game(testData.equidistantGoblins2);
+      const { nextPos, enemyAdjPos } = g.players.elves[0].nextMove();
+      expect(enemyAdjPos).toEqual([4, 1]);
+      expect(nextPos).toEqual([3, 3]);
+    });
+
+    it("it moves to the first goblin in read order #3", () => {
+      const g = new Game(testData.equidistantGoblins3);
+      const { nextPos, enemyAdjPos } = g.players.elves[0].nextMove();
+      expect(enemyAdjPos).toEqual([2, 1]);
+      expect(nextPos).toEqual([4, 1]);
     });
   });
 
   describe("When elf has multiple equidistant paths to a goblin", () => {
-    it("it moves to the square in read order", () => {
+    it("it moves right", () => {
       const g = new Game(testData.equidistantMove);
       const { nextPos } = g.players.elves[0].nextMove();
       expect(nextPos).toEqual([3, 1]);
     });
 
-    it("as above #2", () => {
+    it("it moves left", () => {
       const g = new Game(testData.equidistantMove2);
       const { nextPos } = g.players.elves[0].nextMove();
       expect(nextPos).toEqual([3, 1]);
+    });
+
+    it("it moves left", () => {
+      const g = new Game(testData.equidistantMove3);
+      const { nextPos } = g.players.elves[0].nextMove();
+      expect(nextPos).toEqual([1, 1]);
+    });
+
+    it("it moves right", () => {
+      const g = new Game(testData.equidistantMove4);
+      const { nextPos } = g.players.elves[0].nextMove();
+      expect(nextPos).toEqual([2, 1]);
+    });
+
+    it("it moves up", () => {
+      const g = new Game(testData.equidistantMove5);
+      const { nextPos } = g.players.elves[0].nextMove();
+      expect(nextPos).toEqual([1, 1]);
+    });
+
+    it("it moves up", () => {
+      const g = new Game(testData.equidistantMove6);
+      const { nextPos } = g.players.elves[0].nextMove();
+      expect(nextPos).toEqual([2, 1]);
     });
   });
 
@@ -44,7 +73,7 @@ describe("Movement", () => {
   });
 
   describe("Multiple rounds", () => {
-    it("When a player moves, its position updates", () => {
+    it("simple movement", () => {
       const g = new Game(testData.playerMoves);
       let i = 3;
       let output = "\n";
@@ -55,7 +84,7 @@ describe("Movement", () => {
       expect(output).toMatchSnapshot();
     });
 
-    it("as above #2", () => {
+    it("complex movement", () => {
       const g = new Game(testData.playerMoves2);
       let i = 3;
       let output = "\n";

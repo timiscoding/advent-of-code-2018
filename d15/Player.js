@@ -1,15 +1,15 @@
 const { Tree, TreeVertex } = require("./Tree");
 const Queue = require("../d11/Queue");
-const { idMaker } = require("../utils");
 const { posCompare, __DEBUG } = require("./common");
 
 class Player {
-  constructor(pos, players, paths) {
+  constructor(pos, players, paths, id) {
     this.pos = pos;
     this.players = players;
     this.paths = paths;
     this.hp = 200; // hit points
     this.ap = 3; // attack power
+    this.id = id;
     if (this instanceof Elf) {
       this.enemy = Goblin;
     } else {
@@ -26,22 +26,38 @@ class Player {
       this.enemy === Goblin ? this.players.goblins : this.players.elves;
     const nextMove = enemies.reduce(
       (res, enemy) => {
-        const { length, nextPos } = this.shortestPath(enemy.pos);
+        const { length, path } = this.shortestPath(enemy.pos);
+        if (length === Infinity) return res;
+        if (length === 0)
+          return {
+            length: 0,
+            nextPos: null,
+            enemyAdjPos: null,
+            enemyPos: null
+          };
+
+        const enemyAdjPos = path[path.length - 1].pos;
+        const nextPos = path[0].pos;
         if (
           length < res.length ||
-          (length !== Infinity &&
-            length === res.length &&
-            posCompare(res.enemyPos, enemy.pos) > 0)
+          (length === res.length &&
+            posCompare(res.enemyAdjPos, enemyAdjPos) > 0)
         ) {
           return {
             length,
             nextPos,
-            enemyPos: enemy.pos
+            enemyAdjPos,
+            enemy
           };
         }
         return res;
       },
-      { length: Infinity, nextPos: null, enemyPos: null }
+      {
+        length: Infinity,
+        nextPos: null,
+        enemyAdjPos: null,
+        enemy: null
+      }
     );
 
     return nextMove;
@@ -64,19 +80,15 @@ class Player {
     const bfsTree = new Tree();
     layers.enqueue(startVertex);
 
-    // console.log("layers" + layers);
     let vertex;
     while ((vertex = layers.dequeue()) && vertex !== endVertex) {
       discovered.add(vertex);
       for (let neighbour of vertex.getEdges()) {
-        // console.log([...discovered].map(v => v.id));
-        // puts("neigh", neighbour);
         if (
           !discovered.has(neighbour) &&
           (neighbour === endVertex || !this.players.pos.has(neighbour))
         ) {
           discovered.add(neighbour);
-          // console.log("neighbour discovered");
           let parent = bfsTree.getVertex(vertex.getKey());
           if (!parent) {
             parent = bfsTree.addVertex(new TreeVertex(vertex, vertex.id));
@@ -85,33 +97,30 @@ class Player {
             new TreeVertex(neighbour, neighbour.id)
           );
           bfsTree.addEdge(parent, child);
-          // console.log("parent %s child %s", parent.id, child.id);
           layers.enqueue(neighbour);
         }
       }
     }
 
     let length = Infinity;
-    let nextPos;
+    const path = [];
     if (vertex === endVertex) {
-      const path = [];
       let cur = bfsTree.getVertex(endVertex.getKey()).parent;
-      nextPos = cur.value.value.pos;
       while (cur.value !== startVertex) {
-        path.push(cur.value);
+        path.push(cur.value.value);
         cur = cur.parent;
       }
-      // console.log(
-      //   "shortest path from %s to %s is %s of length %s",
-      //   endVertex.value.pos,
-      //   startVertex.value.pos,
-      //   path.map(p => p.value.pos).join(" -> "),
-      //   path.length
-      // );
       length = path.length;
     }
 
-    return { length, nextPos };
+    // console.log(
+    //   "shortest path from %s to %s is %s of length %s",
+    //   endVertex.value.pos,
+    //   startVertex.value.pos,
+    //   path.map(p => p.value.pos).join(" -> "),
+    //   path.length
+    // );
+    return { length, path };
   }
 
   attack() {
@@ -133,7 +142,6 @@ class Player {
       const path = this.paths.getVertex(p);
       if (path && this.players.pos.has(path)) {
         const player = this.players.pos.get(path);
-        // console.log("here" + player);
         if (player instanceof this.enemy) {
           if (weak === null || player.hp < weak.hp) {
             weak = player;
@@ -150,13 +158,9 @@ class Player {
   }
 }
 
-const newElfId = idMaker();
-const newGoblinId = idMaker();
-
 class Elf extends Player {
-  constructor(pos, players, paths) {
-    super(pos, players, paths);
-    this.id = newElfId();
+  constructor(...args) {
+    super(...args);
   }
 
   toString() {
@@ -165,9 +169,8 @@ class Elf extends Player {
 }
 
 class Goblin extends Player {
-  constructor(pos, players, paths) {
-    super(pos, players, paths);
-    this.id = newGoblinId();
+  constructor(...args) {
+    super(...args);
   }
 
   toString() {

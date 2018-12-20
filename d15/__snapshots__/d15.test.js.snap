@@ -2,8 +2,8 @@
 
 exports[`Attack Help the elves win! Sample 1 1`] = `
 "#######
-#..E..#
-#...E.#
+#..E..# E1(158)
+#...E.# E0(14)
 #.#.#.#
 #...#.#
 #.....#
@@ -13,10 +13,10 @@ exports[`Attack Help the elves win! Sample 1 1`] = `
 
 exports[`Attack Help the elves win! Sample 2 1`] = `
 "#######
-#.E.E.#
-#.#E..#
-#E.##E#
-#.E.#.#
+#.E.E.# E0(200) E1(23)
+#.#E..# E2(200)
+#E.##E# E3(125) E4(200)
+#.E.#.# E5(200)
 #...#.#
 #######
 "
@@ -24,8 +24,8 @@ exports[`Attack Help the elves win! Sample 2 1`] = `
 
 exports[`Attack Help the elves win! Sample 3 1`] = `
 "#######
-#.E.#.#
-#.#E..#
+#.E.#.# E0(8)
+#.#E..# E1(86)
 #..#..#
 #...#.#
 #.....#
@@ -35,8 +35,8 @@ exports[`Attack Help the elves win! Sample 3 1`] = `
 
 exports[`Attack Help the elves win! Sample 4 1`] = `
 "#######
-#...E.#
-#.#..E#
+#...E.# E0(14)
+#.#..E# E1(152)
 #.###.#
 #.#.#.#
 #...#.#
@@ -47,7 +47,7 @@ exports[`Attack Help the elves win! Sample 4 1`] = `
 exports[`Attack Help the elves win! Sample 5 1`] = `
 "#########
 #.......#
-#.E.#...#
+#.E.#...# E0(38)
 #..##...#
 #...##..#
 #...#...#
@@ -59,21 +59,21 @@ exports[`Attack Help the elves win! Sample 5 1`] = `
 
 exports[`Attack Outcomes Sample 1 1`] = `
 "#######
-#G....#
-#.G...#
-#.#.#G#
+#G....# G0(200)
+#.G...# G1(131)
+#.#.#G# G2(59)
 #...#.#
-#....G#
+#....G# G3(200)
 #######
 "
 `;
 
 exports[`Attack Outcomes Sample 2 1`] = `
 "#######
-#...#E#
-#E#...#
-#.E##.#
-#E..#E#
+#...#E# E0(200)
+#E#...# E2(197)
+#.E##.# E5(185)
+#E..#E# E4(200) E3(200)
 #.....#
 #######
 "
@@ -81,10 +81,10 @@ exports[`Attack Outcomes Sample 2 1`] = `
 
 exports[`Attack Outcomes Sample 3 1`] = `
 "#######
-#.E.E.#
-#.#E..#
-#E.##.#
-#.E.#.#
+#.E.E.# E0(164) E2(197)
+#.#E..# E4(200)
+#E.##.# E3(98)
+#.E.#.# E5(200)
 #...#.#
 #######
 "
@@ -92,11 +92,11 @@ exports[`Attack Outcomes Sample 3 1`] = `
 
 exports[`Attack Outcomes Sample 4 1`] = `
 "#######
-#G.G#.#
-#.#G..#
+#G.G#.# G2(200) G0(98)
+#.#G..# G1(200)
 #..#..#
-#...#G#
-#...G.#
+#...#G# G3(95)
+#...G.# G4(200)
 #######
 "
 `;
@@ -104,78 +104,78 @@ exports[`Attack Outcomes Sample 4 1`] = `
 exports[`Attack Outcomes Sample 5 1`] = `
 "#######
 #.....#
-#.#G..#
+#.#G..# G2(200)
 #.###.#
 #.#.#.#
-#G.G#G#
+#G.G#G# G0(98) G1(38) G3(200)
 #######
 "
 `;
 
 exports[`Attack Outcomes Sample 6 1`] = `
 "#########
-#.G.....#
-#G.G#...#
-#.G##...#
+#.G.....# G0(137)
+#G.G#...# G3(200) G1(200)
+#.G##...# G2(200)
 #...##..#
-#.G.#...#
+#.G.#...# G4(200)
 #.......#
 #.......#
 #########
 "
 `;
 
-exports[`Movement Multiple rounds When a player moves, its position updates 1`] = `
+exports[`Movement Multiple rounds complex movement 1`] = `
 "
-#######
-#G..E.#
-#.....#
-#######
+#########
+#.G...G.# G0(200) G2(200)
+#...G...# G1(197)
+#...E..G# E0(200) G4(200)
+#.G.....# G3(200)
+#.......#
+#G..G..G# G5(200) G6(200) G7(200)
+#.......#
+#########
 
-#######
-#.GE..#
-#.....#
-#######
+#########
+#..G.G..# G0(200) G2(200)
+#...G...# G1(194)
+#.G.E.G.# G3(200) E0(197) G4(200)
+#.......#
+#G..G..G# G5(200) G6(200) G7(200)
+#.......#
+#.......#
+#########
 
-#######
-#.GE..#
-#.....#
-#######
+#########
+#.......#
+#..GGG..# G0(200) G1(191) G2(200)
+#..GEG..# G3(200) E0(185) G4(200)
+#G..G...# G5(200) G6(200)
+#......G# G7(200)
+#.......#
+#.......#
+#########
 
 "
 `;
 
-exports[`Movement Multiple rounds as above #2 1`] = `
+exports[`Movement Multiple rounds simple movement 1`] = `
 "
-#########
-#.G...G.#
-#...G...#
-#...E..G#
-#.G.....#
-#.......#
-#G..G..G#
-#.......#
-#########
+#######
+#G..E.# G0(200) E0(200)
+#.....#
+#######
 
-#########
-#..G.G..#
-#...G...#
-#.G.E.G.#
-#.......#
-#G..G..G#
-#.......#
-#.......#
-#########
+#######
+#.GE..# G0(197) E0(200)
+#.....#
+#######
 
-#########
-#.......#
-#..GGG..#
-#..GEG..#
-#G..G...#
-#......G#
-#.......#
-#.......#
-#########
+#######
+#.GE..# G0(194) E0(197)
+#.....#
+#######
 
 "
 `;

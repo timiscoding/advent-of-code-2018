@@ -1,45 +1,91 @@
-const equidistantGoblins = `
+module.exports.equidistantGoblins = `
 ##########
 #...E..G.#
 #......#.#
 #....G.#G#
 ##########`;
 
-const equidistantElves = `
+module.exports.equidistantElves = `
 ##########
 #...G..E.#
 #......#.#
 #....E.#E#
 ##########`;
 
-const equidistantMove = `
+module.exports.equidistantGoblins2 = `
+######
+#G.G.#
+#..#.#
+#.#..#
+#..E.#
+######
+`;
+
+module.exports.equidistantGoblins3 = `
+######
+#G...#
+#...E#
+#G...#
+#....#
+######
+`;
+
+module.exports.equidistantMove = `
 #######
 #.E...#
 #.....#
 #...G.#
 #######`;
 
-const equidistantMove2 = `
+module.exports.equidistantMove2 = `
 #######
 #...E.#
 #...#.#
 #...G.#
 #######`;
 
-const noMove = `
+module.exports.equidistantMove3 = `
+####
+#.E#
+#G.#
+####
+`;
+
+module.exports.equidistantMove4 = `
+####
+#E.#
+#.G#
+####
+`;
+
+module.exports.equidistantMove5 = `
+####
+#.G#
+#E.#
+####
+`;
+
+module.exports.equidistantMove6 = `
+####
+#G.#
+#.E#
+####
+`;
+
+module.exports.noMove = `
 #######
 #.....#
 #..GE.#
 #.....#
 #######`;
 
-const playerMoves = `
+module.exports.playerMoves = `
 #######
 #....E#
 #G....#
 #######`;
 
-const playerMoves2 = `
+module.exports.playerMoves2 = `
 #########
 #G..G..G#
 #.......#
@@ -50,61 +96,61 @@ const playerMoves2 = `
 #G..G..G#
 #########`;
 
-const attackEnemyOnly = `
+module.exports.attackEnemyOnly = `
 #######
 #..G..#
 #.GGG.#
 #..E..#
 #######`;
 
-const attackNoone = `
+module.exports.attackNoone = `
 #######
 #..G..#
 #.GGG.#
 #..G..#
 #######`;
 
-const attackNoone2 = `
+module.exports.attackNoone2 = `
 #######
 #.....#
 #..G..#
 #.....#
 #######`;
 
-const attackWeakest = `
+module.exports.attackWeakest = `
 #######
 #..E..#
 #.EGE.#
 #..E..#
 #######`;
 
-const attackSameHP = `
+module.exports.attackSameHP = `
 #######
 #..E..#
 #.EGE.#
 #..E..#
 #######`;
 
-const attackSameHP2 = `
+module.exports.attackSameHP2 = `
 #######
 #.....#
 #.EGE.#
 #..E..#
 #######`;
 
-const attackSameHP3 = `
+module.exports.attackSameHP3 = `
 #######
 #.....#
 #..GE.#
 #..E..#
 #######`;
 
-const attack = `
+module.exports.attack = `
 #######
 #..GE.#
 #######`;
 
-const testOutcome = `
+module.exports.testOutcome = `
 #######
 #.G...#
 #...EG#
@@ -114,7 +160,7 @@ const testOutcome = `
 #######
 `;
 
-const testOutcome2 = `
+module.exports.testOutcome2 = `
 #######
 #G..#E#
 #E#E.E#
@@ -124,7 +170,7 @@ const testOutcome2 = `
 #######
 `;
 
-const testOutcome3 = `
+module.exports.testOutcome3 = `
 #######
 #E..EG#
 #.#G.E#
@@ -134,7 +180,7 @@ const testOutcome3 = `
 #######
 `;
 
-const testOutcome4 = `
+module.exports.testOutcome4 = `
 #######
 #E.G#.#
 #.#G..#
@@ -144,7 +190,7 @@ const testOutcome4 = `
 #######
 `;
 
-const testOutcome5 = `
+module.exports.testOutcome5 = `
 #######
 #.E...#
 #.#..G#
@@ -154,7 +200,7 @@ const testOutcome5 = `
 #######
 `;
 
-const testOutcome6 = `
+module.exports.testOutcome6 = `
 #########
 #G......#
 #.E.#...#
@@ -166,7 +212,7 @@ const testOutcome6 = `
 #########
 `;
 
-const testHelpElvesWin = `
+module.exports.testHelpElvesWin = `
 #######
 #.G...#
 #...EG#
@@ -176,7 +222,7 @@ const testHelpElvesWin = `
 #######
 `;
 
-const testHelpElvesWin2 = `
+module.exports.testHelpElvesWin2 = `
 #######
 #E..EG#
 #.#G.E#
@@ -186,7 +232,7 @@ const testHelpElvesWin2 = `
 #######
 `;
 
-const testHelpElvesWin3 = `
+module.exports.testHelpElvesWin3 = `
 #######
 #E.G#.#
 #.#G..#
@@ -196,7 +242,7 @@ const testHelpElvesWin3 = `
 #######
 `;
 
-const testHelpElvesWin4 = `
+module.exports.testHelpElvesWin4 = `
 #######
 #.E...#
 #.#..G#
@@ -206,7 +252,7 @@ const testHelpElvesWin4 = `
 #######
 `;
 
-const testHelpElvesWin5 = `
+module.exports.testHelpElvesWin5 = `
 #########
 #G......#
 #.E.#...#
@@ -217,32 +263,3 @@ const testHelpElvesWin5 = `
 #.....G.#
 #########
 `;
-
-module.exports = {
-  equidistantGoblins,
-  equidistantElves,
-  equidistantMove,
-  equidistantMove2,
-  playerMoves,
-  playerMoves2,
-  noMove,
-  attackEnemyOnly,
-  attackWeakest,
-  attackNoone,
-  attackNoone2,
-  attackSameHP,
-  attackSameHP2,
-  attackSameHP3,
-  attack,
-  testOutcome,
-  testOutcome2,
-  testOutcome3,
-  testOutcome4,
-  testOutcome5,
-  testOutcome6,
-  testHelpElvesWin,
-  testHelpElvesWin2,
-  testHelpElvesWin3,
-  testHelpElvesWin4,
-  testHelpElvesWin5
-};

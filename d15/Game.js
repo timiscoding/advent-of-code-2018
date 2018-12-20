@@ -1,7 +1,7 @@
 const { Elf, Goblin } = require("./Player");
 const { Graph } = require("./Graph");
 const { posCompare, __DEBUG, getChalkInstance } = require("./common");
-const { colours } = require("../utils");
+const { colours, idMaker } = require("../utils");
 
 const chalk = getChalkInstance();
 
@@ -44,6 +44,8 @@ class Game {
   }
 
   parseData(data) {
+    const newElfId = idMaker();
+    const newGoblinId = idMaker();
     const rows = data.trim().split("\n");
     this.pathsSize = { x: rows[0].length, y: rows.length };
     this.playerColours = { elves: [], goblins: [] };
@@ -65,12 +67,17 @@ class Game {
           if (col === "E" || col === "G") {
             let player;
             if (col === "E") {
-              player = new Elf([x, y], this.players, this.paths);
+              player = new Elf([x, y], this.players, this.paths, newElfId());
               this.players.elves.push(player);
               this.playerColours.elves[player.id] =
                 colours[player.id % colours.length];
             } else if (col === "G") {
-              player = new Goblin([x, y], this.players, this.paths);
+              player = new Goblin(
+                [x, y],
+                this.players,
+                this.paths,
+                newGoblinId()
+              );
               this.players.goblins.push(player);
               this.playerColours.goblins[player.id] =
                 colours[player.id % colours.length];
@@ -121,7 +128,7 @@ class Game {
     let players = this.updatePlayerOrder();
     while (players.length && !this.isBattleWon()) {
       const player = players.shift();
-      const { length, nextPos, enemyPos } = player.nextMove();
+      const { length, nextPos, enemy, enemyAdjPos } = player.nextMove();
 
       __DEBUG && console.log("Turn: %s", this.cstr(player));
 
@@ -135,8 +142,8 @@ class Game {
             "%s moves to %s to attack %s at %s",
             this.cstr(player),
             nextPos.toString(),
-            this.cstr(this.players.pos.get(this.paths.getVertex(enemyPos))),
-            enemyPos.toString()
+            this.cstr(enemy),
+            enemyAdjPos.toString()
           );
       }
 
@@ -191,21 +198,15 @@ class Game {
     return players.sort((a, b) => posCompare(a.pos, b.pos));
   }
 
-  print({ silent = false } = {}) {
-    !silent &&
-      console.log(
-        chalk.inverse(
-          `\n${"-".repeat(10)} Game ${this.teamSize.elves}E v ${
-            this.teamSize.goblins
-          }G - After ${this.rounds} round/s ${"-".repeat(10)}\n`
-        )
-      );
+  print() {
+    console.log("\nRound %s:", this.rounds);
     let str = "";
     for (let y = 0; y < this.pathsSize.y; y++) {
+      let playerRow = [];
       for (let x = 0; x < this.pathsSize.x; x++) {
         const path = this.paths.getVertex([x, y]);
         const player = path ? this.players.pos.get(path) : null;
-
+        player && playerRow.push(player);
         if (player && player instanceof Elf) {
           str += chalk[this.playerColours.elves[player.id]].bold("E");
         } else if (player && player instanceof Goblin) {
@@ -216,25 +217,22 @@ class Game {
           str += "#";
         }
       }
-      str += "\n";
+      const stats = playerRow
+        .map(p => {
+          const type = p instanceof Elf ? "E" : "G";
+          const colour =
+            p instanceof Elf
+              ? this.playerColours.elves[p.id]
+              : this.playerColours.goblins[p.id];
+          const chalkStyles =
+            p instanceof Elf ? chalk[colour] : chalk[colour].inverse;
+          return chalkStyles.bold(`${type}${p.id}(${p.hp})`);
+        })
+        .join(" ");
+      str += stats ? ` ${stats}\n` : "\n";
     }
-    !silent && console.log(str);
-    !silent && this.printPlayerInfo();
-    return str;
-  }
-
-  printPlayerInfo() {
-    let str =
-      this.players.elves
-        .map(elf => `${this.cstr(elf)} pos: ${elf.pos} hp: ${elf.hp}`)
-        .join("\n") +
-      "\n" +
-      this.players.goblins
-        .map(
-          goblin => `${this.cstr(goblin)} pos: ${goblin.pos} hp: ${goblin.hp}`
-        )
-        .join("\n");
-    console.log(str + "\n");
+    console.log(str.trim());
+    return str; // for snapshot testing
   }
 }
 
