@@ -19,11 +19,9 @@ class CPU {
     }
 
     let instr;
-    let i = 1;
     while ((instr = this.program[this.r[this.ip]])) {
       this.executeInstr(...instr);
       this.r[this.ip]++;
-      i++;
     }
   }
 
