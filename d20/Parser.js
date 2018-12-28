@@ -6,6 +6,7 @@ class Parser {
     this.regexPtr = 0;
     this.last = [];
     this.depth = 0;
+    this.last = [];
     this.lastSize = 10;
     this.debug = debug;
 
@@ -16,6 +17,10 @@ class Parser {
 
   parse() {
     this.fullPath();
+  }
+
+  maxPathLen() {
+    return this.fullPath();
   }
 
   _logger(fn) {
@@ -98,9 +103,9 @@ class Parser {
   fullPath() {
     this.matchEat("^", "^ at start of FullPath");
     this.match(pathSymbol, "PathSymbol at start of FullPath");
-    this.advPath();
+    const maxPathLen = this.advPath();
     this.matchEat("$", "$ at end of FullPath");
-    console.log("Full path parsed ok");
+    return maxPathLen;
   }
 
   /* Advanced path is more complicated than a 'path' in that it can have
@@ -111,10 +116,7 @@ class Parser {
   */
   advPath() {
     this.match(pathSymbol);
-    this.path();
-    const isBranch = this.branch();
-    if (isBranch) {
-      this.advPath();
+    const pathLen = this.path().length;
     }
   }
 
@@ -122,42 +124,47 @@ class Parser {
 
     branch = (advPath option+)
   */
-  branch() {
-    let isBranch = false;
+  branch(nodes) {
+    let res = { branchLen: 0 };
+    const pathLens = [];
     if (this.matchEatIf("(")) {
       this.depth++;
 
       this.match(pathSymbol, "PathSymbol at start of Branch");
-      this.advPath();
+      pathLens.push(this.advPath());
 
       this.match("|", "| at Branch");
-      this.option();
+      res.isEmptyOption = this.option(pathLens);
 
       while (this.match("|")) {
-        this.option();
+        res.isEmptyOption = this.option(pathLens);
       }
 
       this.matchEat(")", ") at Branch");
       this.depth--;
-      isBranch = true;
+      res.branchLen = Math.max(...pathLens);
     }
-    return isBranch;
+    return res;
   }
 
   /* An option is a pipe symbol with 0 or more advPaths
 
     option = |advPath*
   */
-  option() {
+  option(pathLens) {
+    let isEmptyOption = false;
     if (this.matchEatIf("|")) {
       if (this.match(")")) {
+        isEmptyOption = true;
         this.debug && console.log(".".repeat(this.depth) + "^optional branch");
+        pathLens.forEach((_, i) => (pathLens[i] = pathLens[i] / 2));
       } else if (this.match(pathSymbol)) {
-        this.advPath();
+        pathLens.push(this.advPath());
       } else {
         this.error("empty or AdvPath in Option");
       }
     }
+    return isEmptyOption;
   }
 
   /* A path is a sequence of pathSymbols (N,E,W,S) */
