@@ -37,21 +37,25 @@ describe("Parser", () => {
 describe("Max path length", () => {
   it("Basic sample", () => {
     const p = new Parser("^WNE$");
+    p.parse();
     expect(p.maxPathLen()).toBe(3);
   });
 
   it("Branching sample", () => {
     const p = new Parser("^ENWWW(NEEE|SSE(EE|N))$");
+    p.parse();
     expect(p.maxPathLen()).toBe(10);
   });
 
   it("Empty options sample", () => {
     const p = new Parser("^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$");
+    p.parse();
     expect(p.maxPathLen()).toBe(18);
   });
 
   it("Extra sample", () => {
     const p = new Parser("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$");
+    p.parse();
     expect(p.maxPathLen()).toBe(23);
   });
 
@@ -59,6 +63,7 @@ describe("Max path length", () => {
     const p = new Parser(
       "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"
     );
+    p.parse();
     expect(p.maxPathLen()).toBe(31);
   });
 });

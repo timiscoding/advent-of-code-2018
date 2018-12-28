@@ -1,10 +1,34 @@
+const { idMaker } = require("../utils");
+const { Tree } = require("../d15/Tree");
+
 const pathSymbol = { N: "N", E: "E", S: "S", W: "W", name: "PathSymbol" };
+
+const pathId = idMaker();
+
+class PathNode {
+  constructor({ type = "path", path, distx, id = pathId() }) {
+    this.id = id;
+    this.type = type;
+    this.path = path;
+    this.distx = distx; // number of rooms to x
+  }
+
+  valueOf() {
+    return this.id;
+  }
+
+  toString() {
+    return `${this.path} ${this.type}`;
+  }
+}
 
 class Parser {
   constructor(regex, debug = false) {
     this.regex = regex.trim().split("");
     this.regexPtr = 0;
-    this.last = [];
+    this.tree = new Tree();
+    this.rootNode = null;
+    this.paths = [];
     this.depth = 0;
     this.last = [];
     this.lastSize = 10;
@@ -19,8 +43,26 @@ class Parser {
     this.fullPath();
   }
 
-  maxPathLen() {
-    return this.fullPath();
+  maxPathLen(curNode = this.rootNode, path = "", maxLen = 0) {
+    if (curNode.children.length === 0) {
+      let endPath = "";
+      if (curNode.value.type === "skip") {
+        const pathLen = curNode.value.path.length / 2;
+        endPath = path + curNode.value.path.slice(0, pathLen);
+      } else {
+        endPath = path + curNode.value.path;
+      }
+
+      if (endPath.length > maxLen) {
+        maxLen = endPath.length;
+      }
+      return maxLen;
+    }
+    for (let child of curNode.children) {
+      maxLen = this.maxPathLen(child, path + curNode.value.path, maxLen);
+    }
+
+    return maxLen;
   }
 
   _logger(fn) {
@@ -103,9 +145,8 @@ class Parser {
   fullPath() {
     this.matchEat("^", "^ at start of FullPath");
     this.match(pathSymbol, "PathSymbol at start of FullPath");
-    const maxPathLen = this.advPath();
+    this.rootNode = this.advPath();
     this.matchEat("$", "$ at end of FullPath");
-    return maxPathLen;
   }
 
   /* Advanced path is more complicated than a 'path' in that it can have
@@ -116,8 +157,47 @@ class Parser {
   */
   advPath() {
     this.match(pathSymbol);
-    const pathLen = this.path().length;
+    const path = this.path();
+    let node;
+    if (path) {
+      node = this.tree.addVertex(new PathNode({ path }));
     }
+
+    let childNodes = [];
+    const isBranch = this.branch(childNodes);
+
+    let node2;
+    if (isBranch) {
+      childNodes.forEach(c => {
+        node && this.tree.addEdge(node, c);
+      });
+      node2 = this.advPath();
+
+      if (node2) {
+        // node = this.joinNodes(node, node2);
+        this.tree.addEdge(node, node2);
+      }
+    }
+
+    return node;
+  }
+
+  joinNodes(node, node2) {
+    if (node.children.length === 0 && node2.children.length === 0) {
+      this.tree.addEdge(node, node2);
+    } else if (node.children.length > 0) {
+      if (node.children[0].value.type === "skip") {
+        this.tree.addEdge(node, node2);
+      } else {
+        throw new Error(
+          "TODO If this throws, handle cases like (N|S)E -> NE and SE nodes"
+        );
+        node.children.forEach(c => {
+          this.tree.addEdge(c);
+        });
+      }
+    }
+    // return node2;
   }
 
   /* A branch is an advPath with 1 or more options appended to it
@@ -125,46 +205,44 @@ class Parser {
     branch = (advPath option+)
   */
   branch(nodes) {
-    let res = { branchLen: 0 };
-    const pathLens = [];
+    let isBranch = false;
     if (this.matchEatIf("(")) {
       this.depth++;
 
       this.match(pathSymbol, "PathSymbol at start of Branch");
-      pathLens.push(this.advPath());
+      nodes.push(this.advPath());
 
       this.match("|", "| at Branch");
-      res.isEmptyOption = this.option(pathLens);
+      this.option(nodes);
 
       while (this.match("|")) {
-        res.isEmptyOption = this.option(pathLens);
+        this.option(nodes);
       }
 
       this.matchEat(")", ") at Branch");
       this.depth--;
-      res.branchLen = Math.max(...pathLens);
+      isBranch = true;
     }
-    return res;
+    return isBranch;
   }
 
   /* An option is a pipe symbol with 0 or more advPaths
 
     option = |advPath*
   */
-  option(pathLens) {
-    let isEmptyOption = false;
+  option(nodes) {
     if (this.matchEatIf("|")) {
       if (this.match(")")) {
-        isEmptyOption = true;
         this.debug && console.log(".".repeat(this.depth) + "^optional branch");
-        pathLens.forEach((_, i) => (pathLens[i] = pathLens[i] / 2));
+        nodes.forEach(n => {
+          n.value.type = "skip";
+        });
       } else if (this.match(pathSymbol)) {
-        pathLens.push(this.advPath());
+        nodes.push(this.advPath());
       } else {
         this.error("empty or AdvPath in Option");
       }
     }
-    return isEmptyOption;
   }
 
   /* A path is a sequence of pathSymbols (N,E,W,S) */
