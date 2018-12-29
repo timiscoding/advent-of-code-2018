@@ -1,5 +1,5 @@
 const { idMaker } = require("../utils");
-const { Tree } = require("../d15/Tree");
+const { Tree, TreeVertex } = require("../d15/Tree");
 
 const pathSymbol = { N: "N", E: "E", S: "S", W: "W", name: "PathSymbol" };
 
@@ -18,7 +18,7 @@ class PathNode {
   }
 
   toString() {
-    return `${this.path} ${this.type}`;
+    return `${this.path} ${this.type} ${this.distx}`;
   }
 }
 
@@ -43,26 +43,74 @@ class Parser {
     this.fullPath();
   }
 
-  maxPathLen(curNode = this.rootNode, path = "", maxLen = 0) {
-    if (curNode.children.length === 0) {
-      let endPath = "";
-      if (curNode.value.type === "skip") {
-        const pathLen = curNode.value.path.length / 2;
-        endPath = path + curNode.value.path.slice(0, pathLen);
-      } else {
-        endPath = path + curNode.value.path;
-      }
+  maxPathLen() {
+    let curNode = this.rootNode;
+    const stack = [curNode];
+    let maxLen = 0;
+    const seen = new Set();
+    const path = [];
+    while (stack.length > 0) {
+      curNode = stack.pop();
+      if (!seen.has(curNode)) {
+        seen.add(curNode);
 
-      if (endPath.length > maxLen) {
-        maxLen = endPath.length;
+        if (curNode.children.length > 0) {
+          stack.push(curNode, ...curNode.children);
+          path.push(curNode.value.path);
+          continue;
+        }
+
+        let leafPath = path.join("") + curNode.value.path;
+        if (leafPath.length > maxLen) {
+          maxLen = leafPath.length;
+        }
+      } else {
+        path.pop();
       }
-      return maxLen;
-    }
-    for (let child of curNode.children) {
-      maxLen = this.maxPathLen(child, path + curNode.value.path, maxLen);
     }
 
     return maxLen;
+  }
+
+  pathsWithMinLen(minLen) {
+    let curNode = this.rootNode;
+    const stack = [curNode];
+    const seen = new Set();
+    let paths = 0;
+    curNode.value.distx = 1;
+    while (stack.length > 0) {
+      curNode = stack.pop();
+      if (!seen.has(curNode)) {
+        seen.add(curNode);
+
+        if (curNode.value.distx >= minLen) {
+          paths++;
+        }
+        if (curNode.children.length > 0) {
+          curNode.children.forEach(
+            c => (c.value.distx = c.parent.value.distx + 1)
+          );
+
+          stack.push(...curNode.children);
+        }
+      }
+    }
+    return paths;
+  }
+
+  getRooms() {
+    let cur = this.rootNode;
+    const stack = [cur];
+    let rooms = "";
+    while (stack.length) {
+      cur = stack.pop();
+
+      if (cur.children.length > 0) {
+        stack.push(...cur.children.reverse());
+      }
+      rooms += cur.value.path;
+    }
+    return rooms;
   }
 
   _logger(fn) {
@@ -153,9 +201,9 @@ class Parser {
   0 or more branches appended to the end of it. An advanced path can have more
   advPaths appended to itself
 
-  advPath = path branch* advPath*
+  advPath = path? branch* advPath*
   */
-  advPath() {
+  advPath(explode = true) {
     this.match(pathSymbol);
     const path = this.path();
     let node;
@@ -166,38 +214,50 @@ class Parser {
     let childNodes = [];
     const isBranch = this.branch(childNodes);
 
-    let node2;
+    let pathNodes;
+    if (node && explode) {
+      pathNodes = this.explodeNode(node);
+    }
     if (isBranch) {
-      childNodes.forEach(c => {
-        node && this.tree.addEdge(node, c);
-      });
-      node2 = this.advPath();
+      if (node) {
+        if (!pathNodes) pathNodes = this.explodeNode(node);
+        childNodes.forEach(c => {
+          const cNodes = this.explodeNode(c);
+          this.tree.addEdge(pathNodes[pathNodes.length - 1], cNodes[0]);
+        });
 
-      if (node2) {
-        // node = this.joinNodes(node, node2);
-        this.tree.addEdge(node, node2);
+        const node2 = this.advPath();
+
+        if (node2 instanceof TreeVertex) {
+          const pathNodes2 = this.explodeNode(node2);
+          this.tree.addEdge(pathNodes[pathNodes.length - 1], pathNodes2[0]);
+        } else if (Array.isArray(node2) && node2.length) {
+          node2.forEach(c => {
+            const cNodes = this.explodeNode(c);
+            this.tree.addEdge(pathNodes[pathNodes.length - 1], cNodes[0]);
+          });
+        }
+      } else if (childNodes.length > 0) {
+        node = childNodes;
       }
     }
 
     return node;
   }
 
-  joinNodes(node, node2) {
-    if (node.children.length === 0 && node2.children.length === 0) {
-      this.tree.addEdge(node, node2);
-    } else if (node.children.length > 0) {
-      if (node.children[0].value.type === "skip") {
-        this.tree.addEdge(node, node2);
-      } else {
-        throw new Error(
-          "TODO If this throws, handle cases like (N|S)E -> NE and SE nodes"
-        );
-        node.children.forEach(c => {
-          this.tree.addEdge(c);
-        });
-      }
-    }
-    // return node2;
+  /* explode path node into separate nodes and link them up.
+  ie. NSS node becomes N node -> S node -> S node */
+  explodeNode(node) {
+    const subPath = node.value.path.slice(1);
+    node.value.path = node.value.path[0];
+    const subPathNodes = subPath
+      .split("")
+      .map(p => this.tree.addVertex(new PathNode({ path: p })));
+    const allNodes = [node, ...subPathNodes];
+    allNodes.slice(1).forEach((n, i) => {
+      this.tree.addEdge(allNodes[i], n);
+    });
+    return allNodes;
   }
 
   /* A branch is an advPath with 1 or more options appended to it
@@ -210,7 +270,7 @@ class Parser {
       this.depth++;
 
       this.match(pathSymbol, "PathSymbol at start of Branch");
-      nodes.push(this.advPath());
+      nodes.push(this.advPath(false));
 
       this.match("|", "| at Branch");
       this.option(nodes);
@@ -221,8 +281,10 @@ class Parser {
 
       this.matchEat(")", ") at Branch");
       this.depth--;
+
       isBranch = true;
     }
+
     return isBranch;
   }
 
@@ -233,12 +295,11 @@ class Parser {
   option(nodes) {
     if (this.matchEatIf("|")) {
       if (this.match(")")) {
-        this.debug && console.log(".".repeat(this.depth) + "^optional branch");
         nodes.forEach(n => {
-          n.value.type = "skip";
+          n.value.path = n.value.path.slice(0, n.value.path.length / 2);
         });
       } else if (this.match(pathSymbol)) {
-        nodes.push(this.advPath());
+        nodes.push(this.advPath(false));
       } else {
         this.error("empty or AdvPath in Option");
       }

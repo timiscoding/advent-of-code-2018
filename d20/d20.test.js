@@ -1,4 +1,5 @@
 const Parser = require("./Parser");
+const { reduceRooms } = require("./common");
 
 describe("Parser", () => {
   it("Simple regex", () => {
@@ -31,6 +32,30 @@ describe("Parser", () => {
   it("Multiple branch", () => {
     const p = new Parser("^ESE(N|SS|E)$");
     expect(() => p.parse()).not.toThrow();
+  });
+});
+
+describe("Rooms", () => {
+  it("outputs rooms for paths like A(B|)(C|D)", () => {
+    const data = "^N(SN|)(E|W)$";
+    const p = new Parser(data);
+    p.parse();
+    expect(p.getRooms()).toBe(reduceRooms(data));
+  });
+
+  it("outputs rooms for empty paths", () => {
+    const data = "^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$";
+    const p = new Parser(data);
+    p.parse();
+    expect(p.getRooms()).toBe(reduceRooms(data));
+  });
+
+  it("outputs rooms for branch paths", () => {
+    const data =
+      "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
+    const p = new Parser(data);
+    p.parse();
+    expect(p.getRooms()).toBe(reduceRooms(data));
   });
 });
 
