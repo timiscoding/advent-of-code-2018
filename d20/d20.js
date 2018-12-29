@@ -1,43 +1,51 @@
 const fs = require("fs");
-const { filename, puts } = require("../utils");
-const Parser = require("./Parser");
-const { reduceRooms, chunks } = require("./common");
+const { filename } = require("../utils");
 
-const data = fs
-  .readFileSync(filename)
-  .toString()
-  .trim();
-// const data = "^NN(WS|N(NN|EE))$";
-// const data = "^NW(E|S)$";
-// const data = "^NEWS(EW|)S$";
-// const data = "^N(E|N(N|W(SN|)E))$";
-// const data = "^W(S|)E$";
-// const data = "^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$";
-// const data =
-//   "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
-// const data = "^N(SN|)(EES|W)$";
+const data = fs.readFileSync(filename).toString();
 
-const p = new Parser(data);
-p.parse();
-// puts(p.tree);
+const dir = { N: "N", S: "S", E: "E", W: "W" };
+const move = {
+  [dir.N]: p => [p[0], p[1] + 1],
+  [dir.S]: p => [p[0], p[1] - 1],
+  [dir.E]: p => [p[0] + 1, p[1]],
+  [dir.W]: p => [p[0] - 1, p[1]]
+};
 
-// const treeRooms = p.getRooms();
-// const rooms = reduceRooms(data);
-// console.log("rooms equal", rooms === treeRooms);
+/* Ohhhhhh boy.... went down a massive rabbit hole with my own part 2 solution
+using a tree (see prev commits lolz) which ended up not even working so I found
+https://todd.ginsberg.com/post/advent-of-code/2018/day20/
+and implemented it once I understood how it worked. I think I didn't
+understand the problem and started tackling it from the perspective that I'd have
+to find the shortest/longest path so I was needlessly making things harder for myself */
+function map(regex) {
+  let curLoc = [0, 0];
+  const dist = { [curLoc]: 0 }; // location [x,y] mapped to distance to X
+  const prevLocs = [];
+  regex.split("").forEach(c => {
+    if (dir[c]) {
+      const newLoc = move[c](curLoc);
+      if (!dist[newLoc]) dist[newLoc] = dist[curLoc] + 1;
+      curLoc = newLoc;
+    }
+    if (c === "(") {
+      prevLocs.push(curLoc);
+    }
+    if (c === ")") {
+      curLoc = prevLocs.pop();
+    }
+    if (c === "|") {
+      curLoc = prevLocs[prevLocs.length - 1];
+    }
+  });
+  return dist;
+}
 
-// console.log(chunks(rooms, 10), "rooms");
-// console.log(chunks(treeRooms, 10), "tree rooms");
-// console.log(rooms, "rooms");
-// console.log(treeRooms, "tree rooms");
-// const len = p.tree.getVertices().length;
-// console.log("len: ", len);
-// puts(p.tree);
-// const res2 = p.maxPathLen();
-// console.log("res2: ", res2);
-const res = p.pathsWithMinLen(1000);
-console.log("res: ", res);
+const distances = map(data);
 
-// 10120 too high
-// 8552
-// 8408
-// 8514
+const pt1 = Math.max(...Object.values(distances));
+const pt2 = Object.values(distances).reduce(
+  (rooms, loc) => rooms + Number(loc >= 1000),
+  0
+);
+console.log("pt1: ", pt1);
+console.log("pt2: ", pt2);
