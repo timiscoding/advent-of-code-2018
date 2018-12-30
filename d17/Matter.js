@@ -1,5 +1,22 @@
-class Matter {
-  constructor() {
+const Point = require("./Point");
+
+class Matter extends Point {
+  constructor(pt) {
+    super(pt);
+  }
+
+  isWater() {
+    return this instanceof Water;
+  }
+
+  isClay() {
+    return this instanceof Clay;
+  }
+}
+
+class Water extends Matter {
+  constructor(pt) {
+    super(pt);
     this.children = [];
     this.parent = null;
   }
@@ -23,7 +40,30 @@ class Matter {
     if (!(child instanceof Matter)) {
       throw new Error("Child arg must be a Matter instance");
     }
-    this.children.push(child);
+    if (!this.children.includes(child)) {
+      this.children.push(child);
+    }
+  }
+
+  addSouth() {
+    const water = new Water(this.south());
+    this.addChild(water);
+    water.setParent(this);
+    return water;
+  }
+
+  addEast() {
+    const water = new Water(this.east());
+    this.addChild(water);
+    water.setParent(this);
+    return water;
+  }
+
+  addWest() {
+    const water = new Water(this.west());
+    this.addChild(water);
+    water.setParent(this);
+    return water;
   }
 
   setParent(parent) {
@@ -32,17 +72,8 @@ class Matter {
     }
     this.parent = parent;
   }
-
-  isWater() {
-    return this instanceof Water;
-  }
-
-  isClay() {
-    return this instanceof Clay;
-  }
 }
 
-class Water extends Matter {}
 class Clay extends Matter {}
 
 module.exports = { Matter, Water, Clay };
