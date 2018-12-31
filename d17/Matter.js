@@ -19,6 +19,7 @@ class Water extends Matter {
     super(pt);
     this.children = [];
     this.parent = null;
+    this.falls = true;
   }
 
   getChildren() {
@@ -27,6 +28,35 @@ class Water extends Matter {
 
   getParent() {
     return this.parent;
+  }
+
+  isFalls() {
+    return this.falls;
+  }
+
+  getWestChild() {
+    const [x, y] = this.west();
+    return this.children.find(
+      water => water.point[0] === x && water.point[1] === y
+    );
+  }
+
+  getEastChild() {
+    const [x, y] = this.east();
+    return this.children.find(
+      water => water.point[0] === x && water.point[1] === y
+    );
+  }
+
+  getSouthChild() {
+    const [x, y] = this.south();
+    return this.children.find(
+      water => water.point[0] === x && water.point[1] === y
+    );
+  }
+
+  setFalls(falls) {
+    this.falls = falls;
   }
 
   setChildren(children) {
