@@ -11,4 +11,4 @@ const sim = new WaterSim(input, [500, 0]);
 sim.run();
 sim.countWater();
 sim.countUndrainedWater();
-// sim.drawOutput();
+sim.drawOutput();
