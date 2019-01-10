@@ -17,237 +17,172 @@ function parseData() {
     });
 }
 
-function isBotInRange(a, b) {
-  const dist =
+function dist(a, b) {
+  return (
     Math.abs(a.pos[0] - b.pos[0]) +
     Math.abs(a.pos[1] - b.pos[1]) +
-    Math.abs(a.pos[2] - b.pos[2]);
-  return dist <= b.rad;
-}
-
-const bots = parseData();
-const maxRadBot = bots.reduce(
-  (res, p) => {
-    if (p.rad >= res.rad) {
-      return p;
-    }
-    return res;
-  },
-  { pos: null, rad: 0 }
-);
-
-console.log("maxrad", maxRadBot);
-
-function botsInRange(bot) {
-  return bots.reduce((res, b) => {
-    return isBotInRange(b, bot) ? res.concat(b) : res;
-  }, []);
-}
-
-console.log(botsInRange(maxRadBot).length);
-
-function lineIntersect(a, b) {
-  return a[0] <= b[1] && a[1] >= b[0];
-}
-
-/* box is an array [xs, ys, zs, xe, ye, ze] where xs, ys, zs are the start coordinates and
-xe, ye, ze are the end coordinates */
-function isBoxIntersect(b1, b2) {
-  const xB1 = [b1[0], b1[3]]; // x segment of box 1
-  const yB1 = [b1[1], b1[4]]; // y segment of box 1
-  const zB1 = [b1[2], b1[5]]; // z segment of box 1
-  const xB2 = [b2[0], b2[3]];
-  const yB2 = [b2[1], b2[4]];
-  const zB2 = [b2[2], b2[5]];
-  return (
-    lineIntersect(xB1, xB2) &&
-    lineIntersect(yB1, yB2) &&
-    lineIntersect(zB1, zB2)
+    Math.abs(a.pos[2] - b.pos[2])
   );
 }
 
-/* given a bot with a pos and radius, returns the bounding box in the format [xs, ys, zs, xe, ye, ze] */
-function boundBox(bot) {
-  const { pos, rad } = bot;
-  const xs = pos[0] - rad;
-  const ys = pos[1] - rad;
-  const zs = pos[2] - rad;
-  const xe = pos[0] + rad;
-  const ye = pos[1] + rad;
-  const ze = pos[2] + rad;
-  return [xs, ys, zs, xe, ye, ze];
+function maxSignalCount(bots) {
+  const maxRadBot = bots.sort((a, b) => b.rad - a.rad)[0];
+  return bots.filter(b => dist(b, maxRadBot) <= maxRadBot.rad).length;
 }
 
-const b1 = [-3, -4, 0, -1, -2, 0];
-const b2 = [-1, -2, 0, 1, 2, 0];
-console.log("sqo: ", isBoxIntersect(b1, b2));
+/* signalsInBox chops the space given by `bounds` into 8 `boxSize` sized boxes and places every bot
+   into 1 or more of these boxes.
 
-// const p = { pos: [10, 12, 12], rad: 2 };
-// const bb = boundBox(p.pos, p.rad);
-// console.log("bb: ", bb);
+   If the number of bots in a box is at least `minSignalCount`, the box is further subdivided until
+   it is the size of a point and we can determine the precise number of signals within reach.
 
-// const testPts = [[0, 5], [3, 7], [2, 4], [8, 10], [10, 13]];
+   bots: [{ pos: [x,y,z], rad: Number }...] - array of bots
+   bounds: {
+     x: { min: Number, max: Number },
+     y: { min: Number, max: Number },
+     z: { min: Number, max: Number },
+    } - the bounds of the space to group bots in boxes
+   boxSize: Number - size of the box
+   minSignalCount: Number - the minimum number of signals we are looking for in a point
 
-/* given 2 boxes, returns the intersecting box. if no intersect, returns null */
-function intersect(b1, b2) {
-  if (isBoxIntersect(b1, b2)) {
-    const xs = Math.max(b1[0], b2[0]);
-    const ys = Math.max(b1[1], b2[1]);
-    const zs = Math.max(b1[2], b2[2]);
+   returns an object { distOrigin: Number|null, signalsCount: Number|null } - distOrigin is the
+   distance of the point from origin and signalsCount is the number of bot signals within reach.
+   If it can't find a point with `minSignalsCount` signals, both props will be null.
+*/
+function signalsInBox(bots, bounds, boxSize, minSignalCount) {
+  const subboxes = [];
 
-    const xe = Math.min(b1[3], b2[3]);
-    const ye = Math.min(b1[4], b2[4]);
-    const ze = Math.min(b1[5], b2[5]);
-    return [xs, ys, zs, xe, ye, ze];
-  }
-  return null;
-}
-
-// const rangeOverlaps = [];
-let maxOverlaps = [];
-let overlapRegion = null;
-const botsToProcess = [...bots];
-while (botsToProcess.length) {
-  let bot = boundBox(botsToProcess.pop());
-  // console.log(bots[i], bot);
-  const overlap = [bot];
-  for (let b of botsToProcess) {
-    const bot2 = boundBox(b);
-    const box = intersect(bot, bot2);
-    if (box) {
-      bot = box;
-      overlap.push(bot2);
+  for (let x = bounds.x.min; x < bounds.x.max; x += boxSize) {
+    for (let y = bounds.y.min; y < bounds.y.max; y += boxSize) {
+      for (let z = bounds.z.min; z < bounds.z.max; z += boxSize) {
+        const point = { pos: [x, y, z] };
+        let signalCount;
+        if (boxSize === 1) {
+          signalCount = bots.filter(b => dist(point, b) <= b.rad).length;
+        } else {
+          /* approximately count the number of bot signals in a box. For the edge case where a bot is
+          outside but the bots signal lies on the edge/s of this box, count it as well. We do
+          this because signalCount determines whether we should look inside this box for a point having
+          minSignalCount signals. The furthest point that a signal can still be touching a box is
+          its opposite corner (if a box starts at (0,0,0) then the furthest point is (1,1,1) so we
+          add 3 to allow for it to be included. Doing this can lead to including bots that don't
+          have signals inside this box but we don't care since we'll get the real signal count if
+          the box gets to the stage of being the size of a point */
+          const signals = bots.filter(b => {
+            return (dist(b, point) - b.rad) / boxSize <= 3;
+          });
+          signalCount = signals.length;
+        }
+        if (signalCount >= minSignalCount) {
+          subboxes.push({
+            x,
+            y,
+            z,
+            signalCount,
+            distOrigin: Math.abs(x) + Math.abs(y) + Math.abs(z)
+          });
+        }
+      }
     }
   }
-  if (overlap.length > maxOverlaps.length) {
-    maxOverlaps = [...overlap];
-    overlapRegion = bot;
+
+  let min = { distOrigin: Infinity, signalCount: null };
+  while (subboxes.length) {
+    subboxes.sort((a, b) => b.distOrigin - a.distOrigin); // search by the closest to origin first
+    const subbox = subboxes.pop();
+    if (boxSize === 1) {
+      // box is the size of a single point which means the signalCount is now accurate
+      return { distOrigin: subbox.distOrigin, signalCount: subbox.signalCount };
+    }
+    const newBounds = {
+      x: { min: subbox.x, max: subbox.x + boxSize },
+      y: { min: subbox.y, max: subbox.y + boxSize },
+      z: { min: subbox.z, max: subbox.z + boxSize }
+    };
+    const { distOrigin, signalCount } = signalsInBox(
+      bots,
+      newBounds,
+      boxSize / 2,
+      minSignalCount
+    );
+    if (distOrigin < min.distOrigin) {
+      // found the pt closest to origin with minSignalCount so exit early
+      return { distOrigin, signalCount };
+    }
   }
-  // rangeOverlaps.push(overlap);
+  return min;
 }
 
-console.log(
-  "range overlaps",
-  maxOverlaps.length,
-  overlapRegion,
-  overlapRegion[3] - overlapRegion[0],
-  overlapRegion[4] - overlapRegion[1],
-  overlapRegion[5] - overlapRegion[2]
-);
+/* Find the point closest to origin with the most bot signals
 
-const s = bots.reduce(
-  (inRange, bot) =>
-    isBotInRange(
+   Returns an object with the distance from the point to origin and the bot signals within reach.
+   Props will be null if it can't find any.
+   { distOrigin: Number|null, signalCount: Number|null}
+
+   Original solution from:
+   https://www.reddit.com/r/adventofcode/comments/a8s17l/2018_day_23_solutions/ecddus1/?st=jqpyivt9&sh=646e620a
+*/
+function maxSignalsPt(bots) {
+  // choose initial bounds big enough that will ensure that all bots will be placed in a box
+  const ranges = bots.reduce(
+    (res, { pos: [x, y, z] }) => {
+      res.x.min = Math.min(x, res.x.min);
+      res.x.max = Math.max(x, res.x.max);
+      res.y.min = Math.min(y, res.y.min);
+      res.y.max = Math.max(y, res.y.max);
+      res.z.min = Math.min(z, res.z.min);
+      res.z.max = Math.max(z, res.z.max);
+      return res;
+    },
+    {
+      x: { min: Infinity, max: -Infinity },
+      y: { min: Infinity, max: -Infinity },
+      z: { min: Infinity, max: -Infinity }
+    }
+  );
+  const maxRange = Math.max(
+    ranges.x.max - ranges.x.min,
+    ranges.y.max - ranges.y.min,
+    ranges.z.max - ranges.z.min
+  );
+  // choose a binary number so that when we keep halving it, it will always give a whole number
+  const maxBound = 2 ** Math.ceil(Math.log2(maxRange));
+  const signalsRange = { min: 0, max: bots.length };
+  let best = { distOrigin: null, signalCount: null };
+  while (signalsRange.min <= signalsRange.max) {
+    const signals = Math.floor((signalsRange.max + signalsRange.min) / 2);
+    const { distOrigin, signalCount } = signalsInBox(
+      bots,
       {
-        pos: [12, 12, 12]
+        x: { min: ranges.x.min, max: ranges.x.min + maxBound },
+        y: { min: ranges.y.min, max: ranges.y.min + maxBound },
+        z: { min: ranges.z.min, max: ranges.z.min + maxBound }
       },
-      bot
-    )
-      ? inRange + 1
-      : inRange,
-  0
-);
+      maxBound / 2,
+      signals
+    );
+    if (signalCount === null) {
+      signalsRange.max = signals - 1;
+    } else if (typeof signalCount === "number") {
+      signalsRange.min = signals + 1;
+      best = { distOrigin, signalCount };
+    }
+  }
+  return best;
+}
 
-console.log("s", s);
+function main() {
+  const bots = parseData();
+  console.log(
+    "There are %d bots in range of the bot with the largest radius",
+    maxSignalCount(bots)
+  );
+  const { signalCount, distOrigin } = maxSignalsPt(bots);
+  console.log(
+    "The most signals (%d) received was at %d distance to origin",
+    signalCount,
+    distOrigin
+  );
+}
 
-// const mostRangeOverlaps = rangeOverlaps.reduce((res, overlap) => {
-//   return res.length > overlap.length ? res : overlap;
-// });
-
-/* -12912460 to -9108258
--5933598 to 148909440
-res
--5933598 to -9108258
-/*
-
-/* finds the overlapping region given a list of boxes
-  It finds the highest start and the lowest end for x, y and z
-*/
-// const overlapRegion = mostRangeOverlaps.reduce(
-//   (res, p) => {
-//     if (res[0] > res[3] || p[0] > p[3]) {
-//       console.log("wahhaha", res, p);
-//     }
-//     // console.log(res, p);
-//     res[0] = Math.max(p[0], res[0]);
-//     res[1] = Math.max(p[1], res[1]);
-//     res[2] = Math.max(p[2], res[2]);
-
-//     res[3] = Math.min(p[3], res[3]);
-//     res[4] = Math.min(p[4], res[4]);
-//     res[5] = Math.min(p[5], res[5]);
-// if (p[3] < res[3]) {
-//   res[3] = p[3]; // lowest x end point
-// }
-// if (p[4] < res[4]) {
-//   res[4] = p[4]; // lowest y end point
-// }
-// if (p[5] < res[5]) {
-//   res[5] = p[5]; // lowest z end point
-// }
-// if (p[0] > res[0]) {
-//   res[0] = p[0]; // highest x start point
-// }
-// if (p[1] > res[1]) {
-//   res[1] = p[1]; // highest y start point
-// }
-// if (p[2] > res[2]) {
-//   res[2] = p[2]; // highest z start point
-// }
-//   return res;
-// },
-// [-Infinity, -Infinity, -Infinity, Infinity, Infinity, Infinity]
-// );
-// console.log("overlap region: ", overlapRegion);
-
-// const corners = taxicabCorners(overlapRegion);
-// console.log("centers", corners);
-
-// const posWithMostInRange = corners.reduce(
-//   (res, pos) => {
-//     const inRange = bots.reduce(
-//       (inRange, bot) =>
-//         isBotInRange(
-//           {
-//             pos
-//           },
-//           bot
-//         )
-//           ? inRange + 1
-//           : inRange,
-//       0
-//     );
-
-//     if (inRange > res.maxInRange) {
-//       return { maxInRange: inRange, pos };
-//     }
-//     return res;
-//   },
-//   { maxInRange: 0, pos: null }
-// );
-
-// console.log("cornersInRange", posWithMostInRange);
-// const dist = posWithMostInRange.pos.reduce((sum, p) => sum + p, 0);
-// console.log("dist: ", dist);
-
-// /* given a bounding box, returns the taxicab 'circle' corners. ie. the center on each face of the box */
-// function taxicabCorners(box) {
-//   const midx = (box[0] + box[3]) / 2;
-//   const midy = (box[1] + box[4]) / 2;
-//   const midz = (box[2] + box[5]) / 2;
-//   const xyFace1 = [midx, midy, box[2]];
-//   const xyFace2 = [midx, midy, box[5]];
-//   const yzFace1 = [box[0], midy, midz];
-//   const yzFace2 = [box[3], midy, midz];
-//   const xzFace1 = [midx, box[1], midz];
-//   const xzFace2 = [midx, box[4], midz];
-//   return [xyFace1, xyFace2, yzFace1, yzFace2, xzFace1, xzFace2];
-// }
-
-/*
- full radius 987 [ 51105926, 39748450, 19546294, 56332497, 56023570, 31654539 ] 5226571 16275120 12108245
-
- too high
- cornersInRange { maxInRange: 762, pos: [ 51105926, 58873222, 35288620 ] }
-dist:  145267768
-*/
+main();
